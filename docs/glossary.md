@@ -106,6 +106,37 @@ Examples:
 Capabilities allow Workspace Fabric to reason about what a device can do
 without hard-coding vendor-specific behavior into the core model.
 
+## Toolkit
+
+A collection of non-routing actions that support operating the fabric.
+
+Toolkit actions may prepare devices, recover from errors, query status, launch access methods, or perform operational tasks that are related to a workspace but are not themselves routes.
+
+## Toolkit Action
+
+A specific non-routing action exposed by Workspace Fabric.
+
+Examples:
+
+-   Send Wake-on-LAN magic packet
+-   Power on device through BMC
+-   Open iDRAC console
+-   Launch SSH session
+-   Send CEC monitor power command
+-   Refresh device status
+-   Run health check
+
+## Wake Action
+
+A toolkit action that attempts to make a device available.
+
+Examples:
+
+-   Send Wake-on-LAN magic packet
+-   Power on through iDRAC, iLO, IMM, or Redfish
+-   Trigger smart plug power
+-   Resume a virtual machine
+
 ## Route
 
 An active connection between endpoints.
@@ -132,6 +163,37 @@ Examples:
 -   Presentation mode
 
 Applying a scene changes the fabric into a known arrangement.
+
+## Scene Scope
+
+The subset of the fabric that a scene is intended to control.
+
+A scene should only modify endpoints, routes, device states, or toolkit actions that are explicitly included in its scope.
+
+Anything outside the scene scope should be left unchanged.
+
+## Mask
+
+A rule that tells Workspace Fabric to ignore part of the fabric when applying a scene.
+
+Masks prevent scenes from unintentionally disturbing unrelated sources, sinks, routes, or devices.
+
+Example:
+
+```text
+Scene: Work Mode
+```
+
+Included:
+-   center_monitor video
+-   keyboard_mouse USB
+-   speakers audio
+
+Masked / ignored:
+-   left_monitor
+-   right_monitor
+-   capture_card
+-   lab_server_console
 
 ## Workspace
 
