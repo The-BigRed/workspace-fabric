@@ -1,0 +1,26 @@
+[project]
+name = "workspace-fabric"
+version = "0.0.1"
+description = "Software-defined workspace infrastructure for dynamically connecting physical and virtual resources."
+readme = "README.md"
+requires-python = ">=3.14"
+license = "Apache-2.0"
+authors = [{ name = "Brad Richins" }]
+
+[tool.black]
+line-length = 100
+target-version = ["py314"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
