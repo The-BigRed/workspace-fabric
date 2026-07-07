@@ -13,7 +13,14 @@ def test_loads_example_configuration() -> None:
     assert config.version == 1
     assert set(config.fabrics) == {"local_workspace"}
     assert set(config.drivers) == {"mock_video", "mock_usb_a", "mock_usb_b"}
-    assert set(config.hosts) == {"desktop", "work_laptop", "pikvm", "controller"}
+    assert set(config.hosts) == {
+        "desktop",
+        "work_laptop",
+        "pikvm",
+        "controller",
+        "spare_laptop",
+        "rack_server",
+    }
     assert set(config.displays) == {"primary_4k", "secondary_2k"}
     assert set(config.usb_matrices) == {"usb_a", "usb_b"}
     assert set(config.usb_devices) == {"keyboard", "mouse", "camera", "microphone", "speakers"}

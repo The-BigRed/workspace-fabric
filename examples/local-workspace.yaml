@@ -47,6 +47,14 @@ hosts:
     fabric: local_workspace
     display_name: Workspace Fabric Controller
 
+  spare_laptop:
+    fabric: local_workspace
+    display_name: Spare Laptop
+
+  rack_server:
+    fabric: local_workspace
+    display_name: Rack Server
+
 video_sources:
   desktop_dp1:
     fabric: local_workspace
