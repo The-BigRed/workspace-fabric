@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "workspace-fabric"
 version = "0.0.1"
@@ -6,15 +10,30 @@ readme = "README.md"
 requires-python = ">=3.14"
 license = "Apache-2.0"
 authors = [{ name = "Brad Richins" }]
+dependencies = ["PyYAML>=6.0.3"]
+
+[project.optional-dependencies]
+dev = [
+    "black>=26.5.1",
+    "pytest>=9.1.1",
+    "ruff>=0.15.20",
+]
 
 [tool.black]
 line-length = 100
 target-version = ["py314"]
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py314"
 src = ["src", "tests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
