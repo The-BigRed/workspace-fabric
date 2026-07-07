@@ -1,0 +1,185 @@
+version: 1
+
+fabrics:
+  local_workspace:
+    display_name: Local Workspace
+    description: Main desk workspace
+
+drivers:
+  mock_video:
+    type: mock_video_matrix
+    fabric: local_workspace
+    capabilities:
+      video_routing: supported
+      route_query: supported
+      fast_switching: supported
+      scaler: supported
+      edid_clone: unsupported
+
+  mock_usb_a:
+    type: mock_usb_matrix
+    fabric: local_workspace
+    capabilities:
+      usb_routing: supported
+      route_query: supported
+
+  mock_usb_b:
+    type: mock_usb_matrix
+    fabric: local_workspace
+    capabilities:
+      usb_routing: supported
+      route_query: supported
+
+hosts:
+  desktop:
+    fabric: local_workspace
+    display_name: Personal Desktop
+
+  work_laptop:
+    fabric: local_workspace
+    display_name: Work Laptop
+
+  pikvm:
+    fabric: local_workspace
+    display_name: PiKVM
+
+  controller:
+    fabric: local_workspace
+    display_name: Workspace Fabric Controller
+
+video_sources:
+  desktop_dp1:
+    fabric: local_workspace
+    host: desktop
+    display_name: Desktop DP1
+
+  desktop_dp2:
+    fabric: local_workspace
+    host: desktop
+    display_name: Desktop DP2
+
+  work_laptop_dp1:
+    fabric: local_workspace
+    host: work_laptop
+    display_name: Work Laptop DP1
+
+  work_laptop_dp2:
+    fabric: local_workspace
+    host: work_laptop
+    display_name: Work Laptop DP2
+
+video_outputs:
+  video_out1:
+    fabric: local_workspace
+    driver: mock_video
+    port: 1
+
+  video_out2:
+    fabric: local_workspace
+    driver: mock_video
+    port: 2
+
+displays:
+  primary_4k:
+    fabric: local_workspace
+    display_name: Primary 4K Monitor
+    output: video_out1
+
+  secondary_2k:
+    fabric: local_workspace
+    display_name: Secondary 2K Monitor
+    output: video_out2
+
+usb_matrices:
+  usb_a:
+    fabric: local_workspace
+    driver: mock_usb_a
+    hosts:
+      1: desktop
+      2: work_laptop
+      3: pikvm
+      4: spare_laptop
+
+  usb_b:
+    fabric: local_workspace
+    driver: mock_usb_b
+    hosts:
+      1: desktop
+      2: work_laptop
+      3: controller
+      4: rack_server
+
+usb_devices:
+  keyboard:
+    fabric: local_workspace
+    display_name: Primary Keyboard
+    matrix: usb_a
+    device_port: 1
+
+  mouse:
+    fabric: local_workspace
+    display_name: Primary Mouse
+    matrix: usb_a
+    device_port: 2
+
+  camera:
+    fabric: local_workspace
+    display_name: Conference Camera
+    matrix: usb_a
+    device_port: 3
+
+  microphone:
+    fabric: local_workspace
+    display_name: Microphone
+    matrix: usb_a
+    device_port: 4
+
+  speakers:
+    fabric: local_workspace
+    display_name: Speakers
+    matrix: usb_b
+    device_port: 1
+
+workspaces:
+  work:
+    fabric: local_workspace
+    display_name: Work
+    video:
+      primary_4k: work_laptop_dp1
+      secondary_2k: work_laptop_dp2
+    usb:
+      keyboard: work_laptop
+      mouse: work_laptop
+      camera: work_laptop
+      microphone: work_laptop
+      speakers: work_laptop
+
+  desktop:
+    fabric: local_workspace
+    display_name: Desktop
+    video:
+      primary_4k: desktop_dp1
+      secondary_2k: desktop_dp2
+    usb:
+      keyboard: desktop
+      mouse: desktop
+      camera: desktop
+      microphone: desktop
+      speakers: desktop
+
+  hybrid_meeting:
+    fabric: local_workspace
+    display_name: Hybrid Meeting
+    video:
+      primary_4k:
+        source: desktop_dp1
+        fast_switching:
+          enabled: true
+          policy: prefer
+      secondary_2k: work_laptop_dp1
+    usb:
+      keyboard: desktop
+      mouse: desktop
+      camera: work_laptop
+      microphone: work_laptop
+      speakers: work_laptop
