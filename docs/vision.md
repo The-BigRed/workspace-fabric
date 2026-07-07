@@ -1,6 +1,9 @@
 # Workspace Fabric Vision
 
 ## Vision Statement
+Workspace Fabric is a control plane that weaves independent workspace resources into a coherent,
+programmable operating environment. By allowing users to compose workspaces instead of manipulating
+hardware, it transforms collections of independent devices into a unified, adaptable workspace.
 
 Workspace Fabric exists to make technology disappear behind intent.
 

@@ -592,6 +592,24 @@ Potential responsibilities include:
 - Reporting current desktop configuration.
 - Synchronizing operating system state with physical routing.
 
+Additional display-focused responsibilities identified for the Windows Display Agent include:
+
+- Changing which display Windows considers the primary display.
+- Enabling or disabling specific displays.
+- Applying known display layouts.
+- Reporting display identity, availability, and current role.
+- Exposing only approved display controls to Workspace Fabric.
+
+The agent should not assume that every display, display setting, or operating system capability should automatically be controllable through the fabric.
+
+Instead, the agent should have its own local configuration defining which displays and capabilities it exposes.
+
+This is important because the operating system may have access to devices or settings that should remain outside Workspace Fabric's control.
+
+The agent therefore becomes both a capability provider and a policy boundary.
+
+It advertises only the resources and actions explicitly configured for fabric control.
+
 Importantly, the Windows Display Agent is not considered part of the core Workspace Fabric architecture.
 
 It is an optional driver providing operating system resources to the control plane.
@@ -603,6 +621,20 @@ This established an important architectural precedent.
 Workspace Fabric drivers are not limited to physical hardware.
 
 Drivers may expose capabilities originating from operating systems, cloud services, or software components whenever those capabilities contribute meaningful resources to the workspace model.
+
+### Beyond Display Management
+
+Although the initial purpose of the Windows Display Agent is display control, the same architectural pattern may eventually support other operating system-level resources.
+
+For example, a future agent could expose local devices or services to Workspace Fabric in a controlled way.
+
+One possible future direction is local device encapsulation.
+
+In this model, an agent could capture a local peripheral or service, encapsulate it over TCP/IP, and make it available to a remote agent on another system. Workspace Fabric would then manage the logical connection between those agents as part of the broader fabric.
+
+This idea is exploratory and outside the initial implementation scope.
+
+However, it reinforces the architectural principle that agents are not limited to display management. An agent may eventually act as a software-defined endpoint provider, exposing approved local resources into the fabric under explicit user control.
 
 ## PiKVM Integration
 
@@ -658,6 +690,8 @@ Rather than permanently wiring PiKVM to a single host, Workspace Fabric can dyna
 This allows a single PiKVM instance to provide remote access to multiple systems through coordinated video and USB routing.
 
 Workspace Fabric therefore treats the remote console as another destination within the overall resource model rather than as an isolated management device.
+
+This realization ultimately led to the broader concept of Local Console Virtualization, in which Workspace Fabric itself may eventually consume remote console technologies and present them through locally attached workspace resources.
 
 ### Future Evolution
 
@@ -742,6 +776,31 @@ Possible future capabilities include:
 
 The core architecture should avoid assumptions that would prevent future federation.
 
+### Multi-User Orchestration Layer
+
+Another future direction is a higher-level orchestration layer capable of managing shared Workspace Fabric environments for multiple users.
+
+The initial reference deployment is single-user, but the architecture should not assume that only one operator exists.
+
+A future orchestration layer may need to support:
+
+- External authentication.
+- Role-based access control.
+- Resource ownership.
+- Device locking.
+- Workspace reservations.
+- Conflict detection.
+- Audit logging.
+- Multi-user policy enforcement.
+
+This becomes especially important in larger deployments where multiple operators may share access to the same physical or virtual fabric.
+
+For example, in a data center or broadcast environment, one operator should not be able to inadvertently steal a display, KVM session, USB path, or remote console resource that another operator is actively using.
+
+This capability is not part of the initial implementation and may never be implemented by the original author. However, the core architecture should avoid assumptions that would make multi-user coordination impossible later.
+
+In particular, Workspace Fabric should avoid hard-coding single-user ownership semantics into the core resource model. Resource state should be capable of representing ownership, locks, reservations, or policy constraints in the future, even if Version 1 does not enforce them.
+
 ### Lessons Learned
 
 The introduction of the Fabric abstraction significantly broadened the scope of Workspace Fabric.
@@ -758,13 +817,33 @@ These ideas should not influence Version 1 implementation decisions unless speci
 
 Areas identified for future exploration include:
 
-### Local Console Presentation
+### Local Console Virtualization
 
-One particularly compelling concept is the ability to present remote console sessions directly on local workspace resources.
+One of the more significant architectural ideas to emerge during the design process was the realization that Workspace Fabric should not only integrate with remote console technologies, but may eventually become a consumer of those remote consoles.
 
-Rather than launching a browser window for an IP-KVM session, Workspace Fabric could eventually route a remote console onto local displays while using local keyboards and pointing devices.
+Traditional remote console platforms such as PiKVM, iDRAC, iLO, IMM, or enterprise IP-KVM systems are typically accessed through a browser or dedicated client application.
 
-This would blur the distinction between local and remote systems, allowing geographically distributed resources to behave as though they were physically attached to the workspace.
+Workspace Fabric introduces the possibility of treating those remote console sessions as routable resources.
+
+Rather than presenting a browser window, the controller could receive the remote video stream and virtual USB devices, then present those resources through the local workspace.
+
+In this model, Workspace Fabric would:
+
+- Receive a remote video stream.
+- Receive remote keyboard and mouse endpoints.
+- Route the video stream to one or more local displays.
+- Route local keyboards and pointing devices back to the remote system.
+- Present the remote system as though it were physically attached to the local workspace.
+
+From the user's perspective, interacting with a remote server could become indistinguishable from interacting with a locally connected computer.
+
+This concept extends the resource-oriented philosophy beyond physical hardware.
+
+Whether a computer is connected through a local HDMI cable, a PiKVM, an enterprise IP-KVM, or another remote console technology becomes an implementation detail managed by drivers rather than something exposed to the user.
+
+Although this capability is well beyond the scope of the initial implementation, the architecture should avoid assumptions that distinguish local and remote console resources unnecessarily.
+
+This concept also suggests that future Workspace Fabric controllers may expose their own local displays and USB ports as fabric resources, allowing the controller itself to become an endpoint within the workspace.
 
 ### Additional Operating System Agents
 
@@ -778,6 +857,16 @@ Future operating system agents may expose additional capabilities including:
 - Peripheral discovery.
 - Window placement.
 - Operating system workspace profiles.
+
+### Software-Defined Endpoint Agents
+
+Workspace Fabric may eventually support operating system agents that expose approved local resources into the fabric.
+
+These agents could provide capabilities beyond display management, including controlled access to local peripherals, software services, or encapsulated device streams.
+
+This creates a potential path toward software-defined endpoints where resources are not limited to physical matrix ports.
+
+Any such agent must be explicitly configured by the local system owner and should expose only approved resources and capabilities to the fabric.
 
 ### Additional Resource Types
 
@@ -866,6 +955,9 @@ Examples include:
 - Transaction rollback.
 - Mobile applications.
 - Native desktop applications.
+- Multi-user orchestration layer with external authentication, RBAC, resource locking, and reservations.
+- Software-defined endpoint agents capable of exposing approved local devices or services into the fabric.
+- TCP/IP encapsulation of local device resources between agents.
 
 These features should not influence Version 1 scope except where architectural flexibility should be preserved.
 
@@ -883,5 +975,8 @@ Examples include:
 - Should transactions eventually support rollback?
 - Should automation policies become a first-class subsystem?
 - How should permissions be modeled for multi-user environments?
+- Should multi-user locking and reservations eventually live inside Workspace Fabric itself, or in a higher-level orchestration layer above independent fabric controllers?
+- What security and permission model should govern operating system agents that expose local resources into the fabric?
+- Should device encapsulation between agents be considered part of Workspace Fabric core, or a separate extension layer?
 
 These questions are intentionally left open to allow practical implementation experience to guide future architectural decisions.
