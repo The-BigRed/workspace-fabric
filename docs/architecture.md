@@ -3,7 +3,13 @@
 
 ## Purpose
 
-This document describes the high-level architecture of Workspace Fabric. It intentionally focuses on concepts and responsibilities rather than implementation details or programming languages.
+This document describes the architectural structure of Workspace Fabric.
+
+Workspace Fabric is a control plane that weaves independent workspace resources into a coherent, programmable operating environment.
+
+Rather than describing hardware, this document describes the logical architecture responsible for translating user intent into coordinated actions across physical devices, software agents, and future workspace resources.
+
+Implementation details, hardware behavior, and architectural rationale are documented elsewhere.
 
 ## Architectural Goals
 
@@ -15,6 +21,12 @@ Workspace Fabric is designed to:
 - Be deterministic and explainable.
 - Be easy to integrate with external automation and AI systems.
 - Allow new hardware to be added through modular drivers.
+- Model user intent rather than hardware topology.
+- Treat resources as first-class architectural objects.
+- Support optional capabilities without reducing the platform to the lowest common denominator.
+- Execute workspace changes as validated transactions.
+- Allow physical and software resources to participate equally.
+- Scale naturally from a single workspace to multiple independent fabrics.
 
 Workspace Fabric is **not** an automation engine. It provides the control plane that automation systems consume.
 
@@ -52,25 +64,45 @@ Responsibilities:
 
 The core system should never communicate directly with hardware.
 
-### Layer 3 – Core Fabric Model
+### Layer 3 – Core Resource Model
 
-The core model contains the project's domain objects:
+The core resource model defines the logical resources that describe a workspace. Users interact with resources rather than hardware, while drivers translate those resources into implementation-specific operations.
 
-- Fabric
-- Device
-- Endpoint
-- Connection
-- Capability
-- Route
-- Scene
-- Mask
-- Workspace
-- Toolkit Action
-- State
+Examples include:
+
+- Fabrics
+- Hosts
+- Displays
+- Video Sources
+- USB Devices
+- Remote Consoles
+- Workspaces
+- Scenes
+- Routes
+- Capabilities
+
+These logical resources are intentionally independent of hardware implementation.
+
+Hardware-specific concepts such as ports, protocols, and command sets remain the responsibility of individual drivers.
 
 This layer contains no vendor-specific logic.
 
 ### Layer 4 – Control Plane
+
+The control plane contains the orchestration engine responsible for maintaining the resource graph, desired state, observed state, transaction planning, capability negotiation, driver coordination, and API presentation.
+
+## Core Responsibilities
+
+The Workspace Fabric core is responsible for:
+
+- Maintaining the resource graph.
+- Maintaining desired and observed state.
+- Validating workspace requests.
+- Negotiating capabilities.
+- Planning transactions.
+- Coordinating drivers.
+- Recording transaction history.
+- Explaining execution decisions.
 
 The control plane is responsible for:
 
@@ -149,6 +181,10 @@ This separation allows the physical wiring to remain largely unchanged while ope
 Future enhancements may include:
 
 - Multiple independent fabrics.
+- Multi-fabric federation.
+- Local Console Virtualization.
+- Operating system agents.
+- Multi-user orchestration layers.
 - Distributed control planes.
 - High-availability controllers.
 - Additional transport types.
