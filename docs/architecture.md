@@ -5,7 +5,9 @@
 
 This document describes the architectural structure of Workspace Fabric.
 
-Workspace Fabric is a control plane that weaves independent workspace resources into a coherent, programmable operating environment.
+**Workspace Fabric is a hardware-agnostic control plane for dynamically reconfigurable workspaces.**
+
+It weaves independent workspace resources into a coherent, programmable operating environment.
 
 Rather than describing hardware, this document describes the logical architecture responsible for translating user intent into coordinated actions across physical devices, software agents, and future workspace resources.
 
@@ -32,6 +34,52 @@ Workspace Fabric is **not** an automation engine. It provides the control plane 
 
 ## Layered Architecture
 
+Workspace Fabric follows a layered architecture that cleanly separates user
+intent, orchestration, hardware abstraction, and physical resources.
+
+```text
+                       Clients
+           CLI • API • Web UI • Automation
+                          │
+                          ▼
+               +----------------------+
+               |   Workspace Fabric   |
+               |    Control Plane     |
+               +----------------------+
+                          │
+          +---------------+---------------+
+          │                               │
+          ▼                               ▼
+     Configuration                 Resource Graph
+          │                               │
+          └───────────────┬───────────────┘
+                          ▼
+                 Transaction Planner
+                Transaction Executor
+            Desired & Observed State
+                          │
+                          ▼
+                   Driver Abstraction
+                          │
+        +-----------------+-----------------+
+        │                 │                 │
+        ▼                 ▼                 ▼
+   Video Drivers     USB Drivers     Other Drivers
+        │                 │                 │
+        +-----------------+-----------------+
+                          │
+                          ▼
+                 Physical Infrastructure
+```
+
+The architecture intentionally flows in one direction.
+
+Clients express **intent**, the control plane validates and plans
+transactions, drivers translate those transactions into vendor-specific
+operations, and physical hardware performs the requested actions.
+
+Each layer communicates only with the layer immediately beneath it.
+
 ### Layer 1 – Physical Infrastructure
 
 Examples:
@@ -50,7 +98,7 @@ Examples:
 
 These represent the real resources being managed.
 
-### Layer 2 – Drivers
+### Layer 2 – Driver Abstraction
 
 Drivers communicate with individual devices using their native protocols.
 
@@ -64,30 +112,7 @@ Responsibilities:
 
 The core system should never communicate directly with hardware.
 
-### Layer 3 – Core Resource Model
-
-The core resource model defines the logical resources that describe a workspace. Users interact with resources rather than hardware, while drivers translate those resources into implementation-specific operations.
-
-Examples include:
-
-- Fabrics
-- Hosts
-- Displays
-- Video Sources
-- USB Devices
-- Remote Consoles
-- Workspaces
-- Scenes
-- Routes
-- Capabilities
-
-These logical resources are intentionally independent of hardware implementation.
-
-Hardware-specific concepts such as ports, protocols, and command sets remain the responsibility of individual drivers.
-
-This layer contains no vendor-specific logic.
-
-### Layer 4 – Control Plane
+### Layer 3 – Control Plane
 
 The control plane contains the orchestration engine responsible for maintaining the resource graph, desired state, observed state, transaction planning, capability negotiation, driver coordination, and API presentation.
 
@@ -115,6 +140,29 @@ The control plane is responsible for:
 - Exposing APIs.
 
 The control plane should always be able to explain its decisions.
+
+### Layer 4 – Core Resource Model
+
+The core resource model defines the logical resources that describe a workspace. Users interact with resources rather than hardware, while drivers translate those resources into implementation-specific operations.
+
+Examples include:
+
+- Fabrics
+- Hosts
+- Displays
+- Video Sources
+- USB Devices
+- Remote Consoles
+- Workspaces
+- Scenes
+- Routes
+- Capabilities
+
+These logical resources are intentionally independent of hardware implementation.
+
+Hardware-specific concepts such as ports, protocols, and command sets remain the responsibility of individual drivers.
+
+This layer contains no vendor-specific logic.
 
 ### Layer 5 – Interfaces
 
@@ -175,6 +223,7 @@ This separation allows the physical wiring to remain largely unchanged while ope
 5. Explainable decisions.
 6. Modular expansion.
 7. Automation-friendly without embedding automation.
+8. The control plane owns policy; drivers own implementation.
 
 ## Future Directions
 

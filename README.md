@@ -3,8 +3,9 @@
 > **Software-defined workspace infrastructure for dynamically connecting
 > physical and virtual resources.**
 
-Workspace Fabric is an open-source platform that abstracts the wiring of
-a modern workspace into a unified, software-controlled fabric.
+Workspace Fabric is an open-source, hardware-agnostic control plane for
+dynamically reconfigurable workspaces. It abstracts the physical and virtual connectivity of a
+modern workspace into a unified, software-controlled fabric.
 
 Instead of thinking about HDMI inputs, USB ports, KVM buttons, or remote
 console URLs, operators interact with logical workspaces, scenes, and
@@ -13,10 +14,15 @@ satisfy that request.
 
 ## Project Status
 
-**Early development**
+**Phase 3 – Hardware Integration**
 
-The project is currently focused on building the core architecture and
-the first hardware drivers.
+Workspace Fabric has completed its foundational architecture and control plane.
+The project currently includes configuration loading, resource graph construction,
+transaction planning and execution, mock hardware drivers, persistent mock state, and a
+functional command-line interface.
+
+The current focus is replacing the mock drivers with hardware drivers, beginning with the
+OREI UHD-808 HDMI matrix and OREI UKM404 USB matrix.
 
 Initial hardware targets include:
 
@@ -84,6 +90,10 @@ Hardware should be abstracted, never hidden. Users should understand
 what the system is doing, and automated actions should be explainable,
 predictable, and reproducible.
 
+Workspace Fabric separates intent from implementation: users request outcomes
+(such as a workspace or scene), while drivers determine how those outcomes are achieved
+on specific hardware.
+
 ## Repository Layout
 
 ``` text
@@ -103,10 +113,53 @@ Near-term milestones:
 1.  Validate communication with the OREI UHD-808.
 2.  Validate communication with the OREI UKM-404.
 3.  Develop the first modular device drivers.
-4.  Build the core fabric model.
+4.  Validate physical routing on real hardware.
 5.  Expose a REST API.
 6.  Build a web interface.
 7.  Integrate with external automation platforms.
+
+## Current Capabilities
+
+- Declarative YAML configuration
+- Resource graph construction
+- Capability validation
+- Transaction planning
+- Transaction execution
+- Workspace transaction history
+- Mock video and USB matrix drivers
+- Persistent mock driver state
+- Workspace-oriented CLI
+
+## Current Limitations
+
+The following are not yet implemented:
+
+- Physical hardware drivers
+- REST API
+- Web UI
+- Desktop application
+- Tablet interface
+- Multi-fabric orchestration
+
+## Operator Smoke Test
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+
+workspace-fabric config validate
+workspace-fabric workspace list
+workspace-fabric apply hybrid_meeting --dry-run
+workspace-fabric apply hybrid_meeting
+workspace-fabric state
+```
+
+Expected results:
+
+- Configuration validates successfully.
+- Available workspaces are listed.
+- Dry-run produces a transaction plan.
+- Apply executes mock driver actions.
+- State reflects the applied workspace and records the transaction.
 
 ## Contributing
 
