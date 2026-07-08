@@ -20,8 +20,8 @@ Start with these documents, in this order:
    `docs/capability-model.md`, and `docs/transaction-model.md` for the core
    models.
 8. `docs/driver-contract.md` before writing or changing any driver code.
-9. `docs/phase-2-foundation.md` and `ai/implementation-roadmap.md` for the
-   current implementation sequence and acceptance criteria.
+9. `PROJECT_STATUS.md` for the current milestone, then the corresponding phase document
+    (for example, `docs/phase-3-hardware-drivers.md`), followed by `ai/implementation-roadmap.md`.
 10. `docs/developer-standards.md` and `ai/coding-guidelines.md` before making
    code changes.
 11. `design/decisions/` for accepted Architecture Decision Records.
@@ -63,26 +63,25 @@ plane that automation systems and user interfaces consume.
 
 ## Current Scope
 
-Check `PROJECT_STATUS.md` for the current phase and milestone. The project is
-currently in Phase 2: Foundation, with implementation beginning at the
-Configuration Loader milestone. Build the core orchestration foundation with
-mock drivers before real hardware drivers.
+Check `PROJECT_STATUS.md` for the current phase and milestone. The project has completed
+Phase 2: Foundation and is ready to begin Phase 3: Hardware Integration.
 
-The intended order is:
+The current milestone is Driver Contract Hardening. Before implementing real hardware drivers,
+stabilize and document the driver contract, including capabilities, observed state, errors,
+timeouts, and transaction behavior.
 
-1. Configuration loader.
-2. Resource graph.
-3. Mock drivers.
-4. Capability validation.
-5. Transaction planner.
-6. Transaction executor.
-7. Minimal CLI or REST API.
-8. Real hardware drivers.
+The intended Phase 3 order is:
 
-Do not implement real OREI UHD-808 or UKM404 drivers, PiKVM integration, a
-production web UI, multi-user support, multi-fabric federation, Local Console
-Virtualization, plugin marketplaces, or advanced policy engines until the
-foundation milestones are complete.
+1. Driver contract hardening.
+2. Physical lab configuration.
+3. OREI UHD-808 video driver.
+4. OREI UKM404 USB driver.
+5. End-to-end physical smoke test.
+6. Safety and recovery behavior.
+
+Do not implement PiKVM integration, a production web UI, multi-user support, multi-fabric
+federation, Local Console Virtualization, plugin marketplaces, or advanced policy engines
+until the Phase 3 hardware milestones are complete.
 
 ## Architecture Boundaries
 

@@ -26,20 +26,32 @@ Completion Criteria:
 - Transaction history is recorded
 
 ## Phase 3 – Hardware Integration (Current)
-- UHD-808
-- UKM404
+
+Deliverables:
+
+- Driver contract hardening
+- Physical lab configuration
+- OREI UHD-808 HDMI driver
+- OREI UKM404 USB driver
 - Windows Display Agent
-- PiKVM
+- PiKVM integration
+- End-to-end physical smoke test
+- Safety and recovery behavior
 
 Completion Criteria:
+
+- Driver contract is stable and documented
+- Physical lab configuration validates
 - UHD-808 driver fully functional
 - UKM404 driver fully functional
 - Windows Display Agent operational
 - PiKVM integration operational
 - End-to-end routing verified on physical hardware
 - CLI operates physical hardware without mock drivers
+- Driver failures, timeouts, and unsupported state queries are handled clearly
 
-DeviceGroup / composite endpoint support is a future model enhancement. Phase 3 may continue using descriptive routable device names for composite USB endpoints.
+DeviceGroup / composite endpoint support is a future model enhancement. Phase 3 may continue
+using descriptive routable device names for composite USB endpoints.
 
 ## Phase 4 – API and Applications
 - Local API service
