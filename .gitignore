@@ -206,6 +206,9 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Workspace Fabric local runtime state
+runtime/state/
+
 # PyPI configuration file
 .pypirc
 

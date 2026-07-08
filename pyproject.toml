@@ -12,6 +12,9 @@ license = "Apache-2.0"
 authors = [{ name = "Brad Richins" }]
 dependencies = ["PyYAML>=6.0.3"]
 
+[project.scripts]
+workspace-fabric = "workspace_fabric.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "black>=26.5.1",
