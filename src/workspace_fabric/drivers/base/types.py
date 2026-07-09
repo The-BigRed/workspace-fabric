@@ -125,7 +125,7 @@ class Driver(Protocol):
 
 @runtime_checkable
 class VideoMatrixDriver(Driver, Protocol):
-    def route_action(self, *, source: str, destination: str) -> DriverAction: ...
+    def route_action(self, *, input_port: int, output_port: int) -> DriverAction: ...
 
 
 @runtime_checkable

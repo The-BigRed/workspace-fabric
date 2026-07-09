@@ -61,11 +61,15 @@ transaction:
       type: video_route
       source: desktop_dp1
       destination: primary_4k
+      input_port: 1
+      output_port: 1
 
     - driver: uhd808
       type: video_route
       source: work_laptop_dp1
       destination: secondary_2k
+      input_port: 3
+      output_port: 2
 
     - driver: ukm404_a
       type: usb_route
@@ -77,6 +81,10 @@ transaction:
       device: camera
       host: work_laptop
 ```
+
+For hardware video drivers, `source` and `destination` are explanatory resource context. The
+orchestration layer resolves them to device-local `input_port` and `output_port` values before the
+driver applies the route.
 
 ## Validation
 

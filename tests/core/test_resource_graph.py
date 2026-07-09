@@ -66,6 +66,88 @@ def test_graph_dump_includes_resources_and_relationships() -> None:
     }
 
 
+def test_video_source_attachment_resolves_driver_input_and_output_ports() -> None:
+    config = load_config_text("""
+        version: 1
+        fabrics:
+          local_workspace: {}
+        drivers:
+          uhd808:
+            type: orei_uhd808
+            fabric: local_workspace
+        hosts:
+          desktop:
+            fabric: local_workspace
+        video_sources:
+          desktop_dp1:
+            fabric: local_workspace
+            host: desktop
+            driver: uhd808
+            port: 1
+        video_outputs:
+          video_out2:
+            fabric: local_workspace
+            driver: uhd808
+            port: 2
+        displays:
+          primary_4k:
+            fabric: local_workspace
+            output: video_out2
+        """)
+
+    graph = build_resource_graph(config)
+    resolution = graph.resolve_video_route("primary_4k", "desktop_dp1")
+
+    assert resolution.driver.id == "uhd808"
+    assert resolution.input_port == 1
+    assert resolution.output_port == 2
+    assert graph.dump()["relationships"]["video_sources"]["desktop_dp1"] == {
+        "host": "desktop",
+        "driver": "uhd808",
+        "port": 1,
+    }
+
+
+def test_video_route_fails_when_source_and_display_are_attached_to_different_drivers() -> None:
+    config = load_config_text("""
+        version: 1
+        fabrics:
+          local_workspace: {}
+        drivers:
+          uhd808_a:
+            type: orei_uhd808
+            fabric: local_workspace
+          uhd808_b:
+            type: orei_uhd808
+            fabric: local_workspace
+        hosts:
+          desktop:
+            fabric: local_workspace
+        video_sources:
+          desktop_dp1:
+            fabric: local_workspace
+            host: desktop
+            driver: uhd808_a
+            port: 1
+        video_outputs:
+          video_out1:
+            fabric: local_workspace
+            driver: uhd808_b
+            port: 1
+        displays:
+          primary_4k:
+            fabric: local_workspace
+            output: video_out1
+        """)
+    graph = build_resource_graph(config)
+
+    with pytest.raises(ResourceGraphError) as exc_info:
+        graph.resolve_video_route("primary_4k", "desktop_dp1")
+
+    assert "$.video_sources.desktop_dp1.driver" in str(exc_info.value)
+    assert "attached to driver 'uhd808_a'" in str(exc_info.value)
+
+
 def test_missing_references_fail_graph_validation() -> None:
     config = load_config_text("""
         version: 1

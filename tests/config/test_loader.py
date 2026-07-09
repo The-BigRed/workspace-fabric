@@ -142,3 +142,20 @@ def test_usb_host_ports_are_normalized_to_integers() -> None:
         1: "desktop",
         2: "work_laptop",
     }
+
+
+def test_video_source_can_declare_driver_input_port() -> None:
+    config = load_config_text("""
+        version: 1
+        video_sources:
+          desktop_dp1:
+            fabric: local_workspace
+            host: desktop
+            driver: uhd808
+            port: 1
+        """)
+
+    source = config.video_sources["desktop_dp1"]
+
+    assert source.driver == "uhd808"
+    assert source.port == 1

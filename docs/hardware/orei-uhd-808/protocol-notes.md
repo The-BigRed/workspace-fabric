@@ -15,7 +15,8 @@ for driver implementation lives in
 
 Status:
 
-- Planned
+- Implemented in driver through TCP/Telnet-style socket transport.
+- Physical validation pending.
 
 Connector:
 
@@ -40,7 +41,8 @@ Notes:
 
 Status:
 
-- Planned
+- Implemented in driver through TCP/Telnet-style socket transport.
+- Physical validation pending.
 
 Connector:
 
@@ -105,10 +107,14 @@ state, disconnected sessions, and invalid route requests.
 
 ## Driver Mapping
 
+The orchestration layer must resolve Workspace Fabric source/display IDs to UHD-808
+device-local ports before calling the driver. The driver consumes `input_port` and `output_port`
+values and must not depend on deployment-specific resource names.
+
 | Driver Method | Protocol Command | Status |
 | --- | --- | --- |
-| Route video | `s in x av out y!` | Planned |
-| Query routes | `r av out y!` | Planned |
+| Route video | `s in x av out y!` | Implemented with mocked transport |
+| Query routes | `r av out y!` | Implemented with mocked transport |
 | Query input link | `r link in x!` | Planned |
 | Query output link | `r link out y!` | Planned |
 | Apply EDID | `s edid in x from z!` | Planned |
@@ -143,10 +149,10 @@ versions during driver validation.
 | Feature | Status |
 | --- | --- |
 | RS-232 transport | Planned |
-| TCP/IP transport | Planned |
-| Telnet transport | Planned |
-| Routing | Planned |
-| Route query | Planned |
+| TCP/IP transport | Implemented, physical validation pending |
+| Telnet transport | Implemented, physical validation pending |
+| Routing | Implemented with mocked transport |
+| Route query | Implemented with mocked transport |
 | EDID assignment | Planned |
 | EDID data query | Planned |
 | Scaler | Planned |

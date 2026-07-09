@@ -32,6 +32,8 @@ class VideoSourceConfig:
     id: str
     fabric: str
     host: str
+    driver: str | None = None
+    port: int | None = None
     display_name: str | None = None
 
 

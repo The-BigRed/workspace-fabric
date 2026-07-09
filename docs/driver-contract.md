@@ -129,14 +129,20 @@ The stable route action names for Phase 3 are:
 
 | Action type | Driver interface | Required payload |
 | --- | --- | --- |
-| `video_route` | `VideoMatrixDriver` | `source`, `destination` |
+| `video_route` | `VideoMatrixDriver` | `input_port`, `output_port` |
 | `usb_route` | `UsbMatrixDriver` | `device`, `host`, `device_port`, `host_port` |
 
 Video matrix drivers should implement:
 
 ```python
-route_action(*, source: str, destination: str) -> DriverAction
+route_action(*, input_port: int, output_port: int) -> DriverAction
 ```
+
+The transaction planner may include logical resource IDs such as `source` and `destination` in
+the action payload for logging, dry-run output, and transaction history. Hardware video drivers
+must not depend on those user-facing names to operate. The orchestration layer is responsible for
+resolving logical video sources and displays to device-local physical ports before invoking the
+driver.
 
 USB matrix drivers should implement:
 

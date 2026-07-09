@@ -125,12 +125,20 @@ Example:
 video_sources:
   desktop_dp1:
     host: desktop
+    driver: uhd808
+    port: 1
     display_name: Desktop DP1
 
   work_laptop_dp1:
     host: work_laptop
+    driver: uhd808
+    port: 3
     display_name: Work Laptop DP1
 ```
+
+`driver` and `port` are attachment metadata, not the user-facing identity of the source. A
+workspace continues to request `desktop_dp1 -> primary_4k`; the resource graph resolves that
+intent to the physical input and output ports owned by the target driver.
 
 ## Video Output
 
@@ -356,6 +364,7 @@ The route planner uses the graph to answer questions such as:
 - Which matrix owns this USB device?
 - Is the target host attached to that matrix?
 - Which video output feeds this display?
+- Which physical input/output ports correspond to this video route?
 - Does the route require an unsupported capability?
 - Would this route conflict with another active route?
 

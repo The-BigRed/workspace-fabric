@@ -56,13 +56,15 @@ def test_mock_video_driver_satisfies_stable_video_interface() -> None:
     driver = MockVideoMatrixDriver("mock_video")
 
     assert isinstance(driver, VideoMatrixDriver)
-    action = driver.route_action(source="desktop_dp1", destination="primary_4k")
+    action = driver.route_action(input_port=1, output_port=2)
     validation = driver.validate_action(action)
 
     assert action.action_type == DriverActionType.VIDEO_ROUTE.value
     assert action.payload == {
-        "source": "desktop_dp1",
-        "destination": "primary_4k",
+        "source": "input_1",
+        "destination": "output_2",
+        "input_port": 1,
+        "output_port": 2,
     }
     assert validation.valid
 

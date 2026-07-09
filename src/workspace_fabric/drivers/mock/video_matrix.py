@@ -45,13 +45,28 @@ class MockVideoMatrixDriver(MockDriverBase):
         state["routes"] = dict(self._routes)
         return state
 
-    def route_action(self, *, source: str, destination: str) -> DriverAction:
+    def route_action(
+        self,
+        *,
+        source: str | None = None,
+        destination: str | None = None,
+        input_port: int | None = None,
+        output_port: int | None = None,
+    ) -> DriverAction:
+        source_id = source if source is not None else f"input_{input_port}"
+        destination_id = destination if destination is not None else f"output_{output_port}"
+        payload: dict[str, Any] = {
+            "source": source_id,
+            "destination": destination_id,
+        }
+        if input_port is not None:
+            payload["input_port"] = input_port
+        if output_port is not None:
+            payload["output_port"] = output_port
+
         return DriverAction(
             action_type=VIDEO_ROUTE_ACTION,
-            payload={
-                "source": source,
-                "destination": destination,
-            },
+            payload=payload,
         )
 
     def validate_action(self, action: DriverAction) -> DriverValidationResult:
