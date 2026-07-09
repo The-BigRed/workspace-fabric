@@ -1,134 +1,142 @@
-# OREI UKM404 Protocol Notes
+# OREI UKM-404 Protocol Notes
 
 ## Purpose
 
-This document is the engineering reference for communicating with the OREI UKM404 USB matrix.
+This document is the driver-facing protocol interpretation for communicating
+with the OREI UKM-404 USB matrix.
 
-It summarizes the vendor protocol in a format convenient for driver development. It should remain synchronized with the driver implementation.
-
-The vendor manual remains the authoritative source.
-
----
+The vendor manual remains authoritative. The extracted vendor command table
+for driver implementation lives in
+[`command-reference.md`](command-reference.md).
 
 ## Source Material
 
-- Vendor manual: `OREI_UKM404_User_Manual.pdf` or equivalent vendor documentation.
-- Original project notes: migrated from `orei-ukm404.md`.
-- Verified driver behavior: to be added as implementation proceeds.
-
----
+- Vendor manual: `UKM-404 Manual.pdf`.
+- Command extraction: [`command-reference.md`](command-reference.md).
+- Real-world observations: [`observations.md`](observations.md).
+- Workspace Fabric driver status: [`driver.md`](driver.md).
 
 ## Hardware Interfaces
 
-### USB / Local Control
+### RS-232
 
 Status:
-- TBD
 
-Notes:
-- Confirm whether the UKM404 exposes a serial, HID, vendor utility, network, or other control interface.
-- Document operating system requirements for the control interface if any exist.
-
-### Serial / RS-232
-
-Status:
-- TBD
+- Documented by vendor manual.
+- Driver implementation planned.
 
 Connector:
-- TBD
 
-Serial Settings:
-- TBD
+- 3-pin 3.81 mm Phoenix connector.
+
+Serial settings:
+
+| Setting | Value |
+| --- | --- |
+| Baud rate | `115200` default |
+| Data bits | `8` |
+| Stop bits | `1` |
+| Check bit | `0` |
 
 Notes:
-- Populate only if the UKM404 provides RS-232 or a serial-style command interface.
 
-### Network / Telnet / TCP
+- Commands are ASCII text.
+- The manual does not document command line endings.
+- The manual does not show a `!` command terminator for UKM-404 commands.
+- The command table uses plain commands such as `status`, `get ip addr`, and
+  `set device x in host y`.
+
+### TCP/IP and Telnet
 
 Status:
-- TBD
 
-Default Port:
-- TBD
+- Documented as management/control interfaces.
+- Command framing requires verification.
 
-Authentication:
-- TBD
+Connector:
+
+- RJ45 100M LAN port.
+
+Documented defaults and examples:
+
+| Item | Value |
+| --- | --- |
+| Default IP address | `192.168.0.100` |
+| TCP/IP port | `8000` |
+| Telnet port | `23` |
+| Web GUI username | `Admin` |
+| Web GUI default password | `1234` |
 
 Notes:
-- Populate only if the UKM404 provides network control.
 
----
-
-## Command Categories
-
-The command categories below are expected areas for investigation during driver implementation.
-
-- Device-to-host routing
-- Route query / status
-- Port status
-- Device connection status
-- Host connection status
-- USB mode / speed reporting
-- System information
-- Reset / recovery behavior
-
----
+- The manual says the LAN port supports Web GUI and TCP/IP control.
+- The manual exposes both TCP/IP and Telnet ports in network status/settings.
+- The RS-232 command table is the only explicit command table. Whether those
+  commands are accepted unchanged over TCP/IP or Telnet is TBD.
+- TCP/IP and Telnet authentication requirements are TBD.
 
 ## Command Reference
 
-To be populated from the vendor documentation and verified during implementation.
+Use [`command-reference.md`](command-reference.md) for command syntax,
+parameters, response examples, caution items, and open questions. Do not
+duplicate the full command list here.
 
-| Command | Purpose | Parameters | Response | Status |
-|---------|---------|------------|----------|--------|
-| TBD | Route USB device port to host port | TBD | TBD | Planned |
-| TBD | Query route state | TBD | TBD | Planned |
-| TBD | Query device/host status | TBD | TBD | Planned |
-| TBD | Query firmware/system info | TBD | TBD | Planned |
+Command areas covered by the vendor manual:
 
----
+- System status and settings.
+- USB device-to-host routing.
+- Route query.
+- Presets.
+- Network configuration.
+- Web GUI controls.
 
 ## Response Formats
 
-To be populated.
+Responses are documented as human-readable ASCII text rather than a formal
+grammar. The first driver should parse only the responses required for its
+supported actions and preserve raw responses for diagnostics.
 
-Document:
+Known response styles:
 
-- Success response format
-- Failure response format
-- Route query response format
-- Status response format
-- Timeout behavior
-- Unexpected or malformed response behavior
-
----
+- Route state lines use forms like `device 1->host 1`.
+- Per-device route query can return forms like `device 1 in host 3`.
+- Network status is returned as labeled text fields.
+- Firmware status includes MCU and Web GUI version lines.
+- Reboot, reset, and network reboot commands may emit multiple response lines.
 
 ## Error Responses
 
-To be populated.
+The manual documents DHCP-related rejection text for static network settings,
+for example:
 
-Document:
+```text
+dhcp on, device can't config static address, set dhcp off first.
+```
 
-- Invalid port
-- Unsupported command
-- Busy / unavailable device
-- Communication timeout
-- Transport unavailable
-- Unknown or malformed response
+TBD:
 
----
+- Invalid command response.
+- Invalid USB device or host port response.
+- Unsupported command response.
+- Busy or unavailable hardware response.
+- Communication timeout behavior.
+- Malformed response behavior.
 
 ## Driver Mapping
 
 | Workspace Fabric Driver Method | Protocol Command | Status |
-|--------------------------------|------------------|--------|
-| Connect | TBD | Planned |
-| Disconnect | TBD | Planned |
-| Route USB device to host | TBD | Planned |
-| Query route state | TBD | Planned |
-| Query capabilities | TBD | Planned |
-| Query firmware/system info | TBD | Planned |
-
----
+| --- | --- | --- |
+| Connect | Transport-specific open | Planned |
+| Disconnect | Transport-specific close | Planned |
+| Health | `status` or transport probe | Planned |
+| Route USB device to host | `set device x in host y` | Planned |
+| Query route state | `get device x in host` | Planned |
+| Query full state | `status` plus per-device route queries | Planned |
+| Query capabilities | Static driver capability report plus verified transport support | Planned |
+| Query firmware/system info | `get model`, `get version` | Planned |
+| Configure network | `set ip mode z`, `set ip addr ...`, `set subnet ...`, `set gateway ...`, `set tcp/ip port x`, `set telnet port x` | Not planned for initial driver |
+| Reboot network module | `set net reboot` | Not planned for initial driver |
+| Factory reset | `reset` | Not planned for initial driver |
 
 ## Capability Verification
 
@@ -138,46 +146,45 @@ Initial expected capability report:
 capabilities:
   usb_routing: supported
   per_device_routing: supported
-  route_query: unknown
+  route_query: supported
   usb3: supported
   host_emulation: unknown
   device_emulation: unknown
 ```
 
-These values are provisional and must be verified against vendor documentation and physical hardware.
+Notes:
 
----
+- `route_query` is documented through `get device x in host`, but should remain
+  hardware-verified before the driver depends on it for reconciliation.
+- USB 3.2 Gen 1 support is documented by the vendor manual.
+- Host emulation and device emulation are not described by the vendor manual.
 
-## Unsupported Features
+## Unsupported or Unverified Features
 
-Document verified hardware limitations here.
-
-Examples:
-
-- Host emulation unsupported: TBD
-- Device emulation unsupported: TBD
-- Route query unsupported: TBD
-
----
+- Host emulation: not documented.
+- Device emulation: not documented.
+- Cross-matrix USB routing: not supported by a single UKM-404 driver instance.
+- TCP/IP command framing: unverified.
+- Telnet command framing: unverified.
+- Command line endings and response terminators: undocumented.
+- Exact default route state: unverified.
 
 ## Firmware Notes
 
-Document firmware-specific behavior here.
-
-| Firmware Version | Behavior / Note | Verified Date |
-|------------------|-----------------|---------------|
-| TBD | TBD | TBD |
-
----
+Firmware-specific behavior is unknown. The manual documents `get version`
+returning MCU firmware and Web GUI versions. Record observed firmware versions
+during driver validation.
 
 ## Verification Status
 
 | Feature | Status | Notes |
-|---------|--------|-------|
-| Connect | Planned | TBD |
-| Device-to-host routing | Planned | TBD |
-| Route query | Unknown | Verify whether supported |
+| --- | --- | --- |
+| RS-232 transport | Planned | Vendor documented |
+| TCP/IP transport | Unknown | Control port documented, command framing TBD |
+| Telnet transport | Unknown | Port documented, command framing TBD |
+| Device-to-host routing | Planned | `set device x in host y` |
+| Route query | Planned | `get device x in host`; verify on hardware |
 | Multiple instances | Planned | Required by reference deployment |
-| USB 3 support | Expected | Verify during implementation |
-| Host emulation | Unknown | Verify during implementation |
-| Device emulation | Unknown | Verify during implementation |
+| USB 3 support | Documented | USB 3.2 Gen 1 |
+| Host emulation | Unknown | Not documented |
+| Device emulation | Unknown | Not documented |

@@ -113,6 +113,7 @@ Phase 3 drivers must implement the shared Python contract in
 `workspace_fabric.drivers.base`.
 
 Required common driver methods:
+
 | Method | Purpose | Side effects |
 | --- | --- | --- |
 | `connect()` | Establish communication with the device, service, or agent. | May open a connection. Must not apply workspace changes. |
