@@ -107,6 +107,47 @@ apply_action(action)
 
 Exact method names may vary by implementation language.
 
+## Concrete Phase 3 Python Contract
+
+Phase 3 drivers must implement the shared Python contract in
+`workspace_fabric.drivers.base`.
+
+Required common driver methods:
+| Method | Purpose | Side effects |
+| --- | --- | --- |
+| `connect()` | Establish communication with the device, service, or agent. | May open a connection. Must not apply workspace changes. |
+| `disconnect()` | Release any active connection. | May close a connection. Must not alter routes. |
+| `health()` | Report communication health as `healthy`, `degraded`, `unreachable`, or `unknown`. | Must not alter routes. |
+| `get_capabilities()` | Return this driver instance's capability inventory. | Must not alter routes. |
+| `get_state()` | Return observed, last-known, assumed, or unknown state. | Must not alter routes. |
+| `validate_action(action)` | Validate a driver action without applying it. | No hardware changes. |
+| `plan_action(action)` | Return a dry-run action plan and warnings/errors. | No hardware changes. |
+| `apply_action(action)` | Apply one assigned action and return a structured result. | May change only resources owned by this driver instance. |
+
+The stable route action names for Phase 3 are:
+
+| Action type | Driver interface | Required payload |
+| --- | --- | --- |
+| `video_route` | `VideoMatrixDriver` | `source`, `destination` |
+| `usb_route` | `UsbMatrixDriver` | `device`, `host`, `device_port`, `host_port` |
+
+Video matrix drivers should implement:
+
+```python
+route_action(*, source: str, destination: str) -> DriverAction
+```
+
+USB matrix drivers should implement:
+
+```python
+route_action(*, device: str, host: str, device_port: int, host_port: int) -> DriverAction
+```
+
+`DriverAction.timeout_seconds` may be set by the core or a future interface. Drivers that can
+enforce timeouts should return a structured `timeout` error when the timeout is exceeded. Drivers
+that cannot enforce a timeout should leave the action result honest and should not report success
+for unknown state.
+
 ## Connection
 
 `connect()` establishes communication with the device, service, or agent.
@@ -132,6 +173,17 @@ unknown
 
 Capabilities must be instance-specific.
 
+Capability statuses must use:
+
+```text
+supported
+unsupported
+unknown
+```
+
+Drivers must not omit unsupported or unknown required capabilities in order to make validation
+pass. If a feature cannot be detected, report `unknown`; do not pretend it is supported.
+
 ## State
 
 `get_state()` reports observed state where available.
@@ -144,6 +196,19 @@ Drivers should distinguish:
 - Unknown state.
 
 If hardware cannot query state, the driver should report that limitation clearly.
+
+State should use explicit labels where possible:
+
+```text
+observed
+last_known
+assumed
+unknown
+```
+
+Observed route state should be returned in a stable shape for the driver type. If a device cannot
+query its current route state, report `unknown` or a clear state query warning/error instead of
+returning fabricated route data.
 
 ## Validation
 
@@ -175,6 +240,10 @@ The result should indicate:
 - Partial failure if applicable.
 - Observed post-action state if available.
 
+`apply_action()` must operate only on the single action assigned by the core. Drivers must not
+execute actions assigned to other drivers, coordinate with other drivers, or infer global workspace
+intent from a route action.
+
 ## Driver Coordination
 
 Drivers must not communicate directly with each other.
@@ -191,7 +260,7 @@ The core coordinates these actions. The drivers remain independent.
 
 ## Error Categories
 
-Recommended structured error categories:
+Structured driver issue categories:
 
 ```text
 connection_failed
@@ -200,13 +269,19 @@ unsupported_capability
 invalid_resource
 invalid_port
 invalid_route
+invalid_action
 hardware_rejected_command
 state_query_failed
 partial_apply
 authentication_failed
 authorization_failed
+mock_failure
 unknown_error
 ```
+
+Drivers may add more specific categories later, but Phase 3 hardware drivers should use these
+shared categories whenever one applies. Errors should include a clear message and, when practical,
+a path or payload field reference.
 
 ## Mock Drivers
 

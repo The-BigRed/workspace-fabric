@@ -9,12 +9,14 @@ from workspace_fabric.drivers.base import (
     DriverActionPlan,
     DriverActionResult,
     DriverActionStatus,
+    DriverActionType,
     DriverIssue,
+    DriverIssueCategory,
     DriverValidationResult,
 )
 from workspace_fabric.drivers.mock.base import CAPABILITY_SUPPORTED, MockDriverBase
 
-USB_ROUTE_ACTION = "usb_route"
+USB_ROUTE_ACTION = DriverActionType.USB_ROUTE.value
 USB_ROUTING_CAPABILITY = "usb_routing"
 
 
@@ -67,7 +69,7 @@ class MockUsbMatrixDriver(MockDriverBase):
         if action.action_type != USB_ROUTE_ACTION:
             errors.append(
                 DriverIssue(
-                    category="invalid_action",
+                    category=DriverIssueCategory.INVALID_ACTION.value,
                     message=f"Unsupported action type {action.action_type!r}",
                     path="$.action_type",
                 )
@@ -131,7 +133,7 @@ class MockUsbMatrixDriver(MockDriverBase):
             if field in action.payload and not isinstance(value, str):
                 errors.append(
                     DriverIssue(
-                        category="invalid_action",
+                        category=DriverIssueCategory.INVALID_ACTION.value,
                         message=f"Payload field {field!r} must be a string",
                         path=f"$.payload.{field}",
                     )
@@ -151,7 +153,7 @@ class MockUsbMatrixDriver(MockDriverBase):
             if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
                 errors.append(
                     DriverIssue(
-                        category="invalid_port",
+                        category=DriverIssueCategory.INVALID_PORT.value,
                         message=f"Payload field {field!r} must be a positive integer",
                         path=f"$.payload.{field}",
                     )

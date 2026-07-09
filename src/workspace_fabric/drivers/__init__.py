@@ -4,10 +4,16 @@ from workspace_fabric.drivers.base import (
     DriverActionPlan,
     DriverActionResult,
     DriverActionStatus,
+    DriverActionType,
+    DriverCapabilityStatus,
     DriverHealth,
     DriverHealthStatus,
     DriverIssue,
+    DriverIssueCategory,
+    DriverObservedStateStatus,
     DriverValidationResult,
+    UsbMatrixDriver,
+    VideoMatrixDriver,
 )
 
 __all__ = [
@@ -16,8 +22,14 @@ __all__ = [
     "DriverActionPlan",
     "DriverActionResult",
     "DriverActionStatus",
+    "DriverActionType",
+    "DriverCapabilityStatus",
     "DriverHealth",
     "DriverHealthStatus",
     "DriverIssue",
+    "DriverIssueCategory",
+    "DriverObservedStateStatus",
     "DriverValidationResult",
+    "UsbMatrixDriver",
+    "VideoMatrixDriver",
 ]

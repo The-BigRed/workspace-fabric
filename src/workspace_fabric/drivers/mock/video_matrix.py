@@ -8,12 +8,14 @@ from workspace_fabric.drivers.base import (
     DriverAction,
     DriverActionResult,
     DriverActionStatus,
+    DriverActionType,
     DriverIssue,
+    DriverIssueCategory,
     DriverValidationResult,
 )
 from workspace_fabric.drivers.mock.base import CAPABILITY_SUPPORTED, MockDriverBase
 
-VIDEO_ROUTE_ACTION = "video_route"
+VIDEO_ROUTE_ACTION = DriverActionType.VIDEO_ROUTE.value
 VIDEO_ROUTING_CAPABILITY = "video_routing"
 
 
@@ -57,7 +59,7 @@ class MockVideoMatrixDriver(MockDriverBase):
         if action.action_type != VIDEO_ROUTE_ACTION:
             errors.append(
                 DriverIssue(
-                    category="invalid_action",
+                    category=DriverIssueCategory.INVALID_ACTION.value,
                     message=f"Unsupported action type {action.action_type!r}",
                     path="$.action_type",
                 )
@@ -118,7 +120,7 @@ class MockVideoMatrixDriver(MockDriverBase):
             if field in action.payload and not isinstance(value, str):
                 errors.append(
                     DriverIssue(
-                        category="invalid_action",
+                        category=DriverIssueCategory.INVALID_ACTION.value,
                         message=f"Payload field {field!r} must be a string",
                         path=f"$.payload.{field}",
                     )

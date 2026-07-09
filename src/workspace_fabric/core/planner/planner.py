@@ -15,10 +15,10 @@ from workspace_fabric.core.transactions import (
     TransactionPlanAction,
     TransactionPlanIssue,
 )
-from workspace_fabric.drivers import DriverAction, DriverActionPlan, DriverIssue
+from workspace_fabric.drivers import DriverAction, DriverActionPlan, DriverActionType, DriverIssue
 
-VIDEO_ROUTE_ACTION = "video_route"
-USB_ROUTE_ACTION = "usb_route"
+VIDEO_ROUTE_ACTION = DriverActionType.VIDEO_ROUTE.value
+USB_ROUTE_ACTION = DriverActionType.USB_ROUTE.value
 
 
 class PlanningDriver(CapabilityProvider, Protocol):
