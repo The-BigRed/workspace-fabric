@@ -1,10 +1,12 @@
-# OREI UHD-808 Hardware Notes
+# OREI UHD-808 Observations
 
 ## Purpose
 
-This document captures hardware-specific observations and driver requirements for the OREI UHD-808 HDMI matrix.
+This document is the field-observation and lab-notes companion for the OREI UHD-808 HDMI matrix.
 
-These notes inform the UHD-808 driver but should not define the generic Workspace Fabric architecture.
+Use this file to capture verified behavior, quirks, deployment notes, and lessons learned while testing or using the device with Workspace Fabric.
+
+Codex may read this file when implementing the driver, but changes to driver behavior should be reflected in `protocol-notes.md` when they become part of the stable driver contract.
 
 ## Role in Reference Deployment
 
@@ -39,7 +41,12 @@ Impact:
 
 This behavior is not inherently wrong. It may be beneficial in some deployments and undesirable in others.
 
-## EDID Management
+Driver implication:
+
+- The UHD-808 driver should report HPD/source-disable behavior as unsupported unless a verified hardware command exists.
+- Operating-system display enable/disable behavior should be handled by a separate host-side display agent.
+
+## EDID Management Observations
 
 The UHD-808 can clone EDID from a destination display.
 
@@ -56,7 +63,7 @@ Driver implications:
 - Do not make EDID management part of basic route behavior.
 - Allow scenes to request EDID behavior through capability policies.
 
-## Scaling and Upscaling
+## Scaling and Upscaling Observations
 
 The UHD-808 includes scaling/upscaling functionality.
 
@@ -66,7 +73,7 @@ Driver implications:
 - Treat scaling as associated with route/output behavior, not as a special display type.
 - Support `prefer` and `require` policies from the capability model.
 
-## Fast Switching
+## Fast Switching Observations
 
 The UHD-808 supports fast switching.
 
@@ -76,41 +83,13 @@ Driver implications:
 - Do not assume fast switching exists in all video matrix drivers.
 - Allow workspace definitions to prefer or require fast switching.
 
-## Candidate Capability Report
+## Relationship to Windows Display Agent
 
-Initial expected capabilities:
+Because the UHD-808 maintains active upstream links, a separate Windows Display Agent may be needed to enable or disable displays at the operating system level.
 
-```yaml
-capabilities:
-  video_routing: supported
-  route_query: unknown
-  edid_clone: supported
-  edid_profile_apply: unknown
-  scaler: supported
-  upscale: supported
-  fast_switching: supported
-  hpd_control: unsupported
-  cec: unknown
-  audio_routing: unknown
-```
+The UHD-808 driver and Windows Display Agent should remain separate drivers coordinated by the Workspace Fabric transaction engine.
 
-These values should be verified during driver implementation.
-
-## Driver Requirements
-
-The UHD-808 driver should eventually support:
-
-- Connect to the matrix.
-- Route input to output.
-- Query routing state if supported.
-- Clone EDID from output if supported.
-- Apply EDID profile if supported.
-- Configure scaler/upscale mode if supported.
-- Configure fast switching if supported.
-- Report unsupported HPD/source-disable behavior.
-- Return structured errors and warnings.
-
-## Non-Goals
+## Non-Goals for UHD-808 Driver
 
 The UHD-808 driver should not:
 
@@ -119,8 +98,40 @@ The UHD-808 driver should not:
 - Assume all HDMI matrices have the same capabilities.
 - Encode user-facing workspace logic.
 
-## Relationship to Windows Display Agent
+## Lab Validation Log
 
-Because the UHD-808 maintains active upstream links, a separate Windows Display Agent may be needed to enable or disable displays at the operating system level.
+Use this section as a running log for physical testing.
 
-The UHD-808 driver and Windows Display Agent should remain separate drivers coordinated by the Workspace Fabric transaction engine.
+### YYYY-MM-DD - Test title
+
+Setup:
+
+- TODO
+
+Action:
+
+- TODO
+
+Observed result:
+
+- TODO
+
+Driver decision:
+
+- TODO
+
+Follow-up:
+
+- TODO
+
+## Open Questions
+
+Track unresolved hardware behavior here until it is confirmed.
+
+| Question | Status | Notes |
+|---|---:|---|
+| Does Telnet use the exact same command set as RS232? | unverified | Confirm from manual and physical test. |
+| Can current routing state be queried? | unverified | Needed for route reconciliation. |
+| Can saved EDID profiles be applied, or only cloned? | unverified | Impacts capability report. |
+| Are CEC commands exposed through the control protocol? | unverified | Keep separate from routing. |
+| Can HPD behavior be controlled by command? | expected unsupported | Current observation suggests active links are maintained. |

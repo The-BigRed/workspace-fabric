@@ -26,8 +26,8 @@ Start with these documents, in this order:
    code changes.
 11. `design/decisions/` for accepted Architecture Decision Records.
 12. `examples/local-workspace.yaml` for the current mock configuration shape.
-13. `docs/reference-platform.md` and `docs/hardware/` for reference hardware
-    context before hardware-related work.
+13. `docs/reference-platform.md` and and the appropriate device directory under `docs/hardware/`
+    for reference hardware context before hardware-related work.
 
 Use `docs/glossary.md` whenever terminology is unclear.
 
@@ -49,6 +49,16 @@ Use `docs/glossary.md` whenever terminology is unclear.
 If documents disagree, prefer accepted ADRs first, then the stable documents in
 `docs/`, then AI summaries in `ai/`, then examples. Update documentation when an
 architecture change is intentionally made.
+
+Hardware protocol references live under:
+
+docs/hardware/
+
+When implementing or modifying a hardware driver, read the corresponding
+vendor documentation before writing code.
+
+Driver implementations should match the documented protocol unless an
+observation file explicitly documents verified behavior that differs.
 
 ## Project Objective
 
@@ -120,6 +130,11 @@ until the Phase 3 hardware milestones are complete.
 - Return structured errors and warnings.
 - Do not silently ignore invalid configuration.
 - Logs should explain what was requested, planned, executed, and observed.
+- When implementing or modifying a hardware driver, keep the associated
+  hardware documentation synchronized. Driver behavior should remain consistent
+  with `protocol-notes.md` and `driver.md`. Newly verified hardware behavior
+  should be recorded in `observations.md` when it differs from vendor
+  documentation or materially affects driver behavior.
 
 ## Coding Standards
 
@@ -166,6 +181,17 @@ Minimum early test coverage should include:
 ## Repository Navigation
 
 - `docs/` contains stable project documentation.
+- `docs/hardware/` contains vendor-specific hardware documentation.
+
+  Each supported hardware device should have its own directory containing:
+
+  - Vendor manual(s) (read-only reference)
+  - `protocol-notes.md` (engineering protocol reference)
+  - `observations.md` (verified hardware behavior and lab discoveries)
+  - `driver.md` (Workspace Fabric driver documentation)
+
+  Hardware documentation supplements the driver implementation but does not
+  define the Workspace Fabric architecture.
 - `ai/` contains AI prompts, summaries, conventions, and roadmap guidance.
 - `design/decisions/` contains accepted ADRs.
 - `examples/` contains sample configuration.
