@@ -16,7 +16,7 @@ Current Phase:
 - Development
 
 Current Milestone:
-- Phase 3 hardware integration
+- Phase 3.3 OREI UKM-404 USB Driver
 
 Driver Version:
 - Unreleased
@@ -27,7 +27,7 @@ Driver Version:
 
 | Model | Status | Notes |
 |-------|--------|-------|
-| OREI UKM404 | Planned | Initial reference USB matrix |
+| OREI UKM404 | Implemented, physical validation pending | Initial reference USB matrix |
 
 Firmware Tested:
 - TBD
@@ -37,13 +37,18 @@ Firmware Tested:
 ## Transport
 
 Current Transport:
-- TBD
+- Configurable command transport implemented for `telnet`, `tcp`, and `serial`.
 
 Future / Alternate Transport:
-- TBD
+- Physical validation may refine line-ending and response-framing behavior.
 
 Notes:
-- Confirm the supported control interface from the vendor manual and physical testing.
+- `telnet` defaults to port `23`.
+- `tcp` defaults to port `8000`.
+- `serial` defaults to baud rate `115200`.
+- The manual does not document command line endings; the implementation defaults to CRLF and
+  allows `line_ending` to be configured.
+- RS-232 support requires `pyserial`.
 
 ---
 
@@ -51,13 +56,13 @@ Notes:
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
-| Connect | Planned | Establish communication with one UKM404 instance |
-| Disconnect | Planned | Cleanly close communication |
-| Route USB device to host | Planned | Map one device-side port to one host-side port |
-| Query route state | Unknown | Verify hardware support |
-| Report capabilities | Planned | Report supported/unsupported/unknown capabilities |
+| Connect | Implemented, physical validation pending | Establish communication with one UKM404 instance |
+| Disconnect | Implemented, physical validation pending | Cleanly close communication |
+| Route USB device to host | Implemented with mocked transport | Maps one device-side port to one host-side port |
+| Query route state | Implemented with mocked transport | Uses documented per-device query command |
+| Report capabilities | Implemented | Report supported/unsupported/unknown capabilities |
 | Support multiple instances | Planned | Required by reference deployment |
-| Report structured errors/warnings | Planned | Required by driver contract |
+| Report structured errors/warnings | Implemented | Required by driver contract |
 
 ---
 
@@ -69,13 +74,14 @@ Initial expected capability report:
 capabilities:
   usb_routing: supported
   per_device_routing: supported
-  route_query: unknown
+  route_query: supported
   usb3: supported
   host_emulation: unknown
   device_emulation: unknown
 ```
 
-These values are provisional. Update them as the vendor documentation and physical testing confirm actual behavior.
+These values are based on the vendor manual and mocked transport tests. Physical hardware testing
+must still confirm route query and transport behavior.
 
 ---
 
@@ -84,13 +90,37 @@ These values are provisional. Update them as the vendor documentation and physic
 Example configuration shape:
 
 ```yaml
+drivers:
+  ukm404_a:
+    type: orei_ukm404
+    fabric: local_workspace
+    connection:
+      transport: telnet
+      host: 172.24.3.193
+      port: 23
+      timeout_seconds: 2
+
+  ukm404_serial:
+    type: orei_ukm404
+    fabric: local_workspace
+    connection:
+      transport: serial
+      port: COM3
+      baud_rate: 115200
+      timeout_seconds: 2
+
+  ukm404_b:
+    type: orei_ukm404
+    fabric: local_workspace
+    connection:
+      transport: telnet
+      host: 172.24.3.194
+      port: 23
+      timeout_seconds: 2
+
 usb_matrices:
   ukm404_a:
-    driver: orei-ukm404
-    transport:
-      type: TBD
-      host: TBD
-      port: TBD
+    driver: ukm404_a
     hosts:
       1: desktop
       2: work_laptop
@@ -98,11 +128,7 @@ usb_matrices:
       4: spare_laptop
 
   ukm404_b:
-    driver: orei-ukm404
-    transport:
-      type: TBD
-      host: TBD
-      port: TBD
+    driver: ukm404_b
     hosts:
       1: desktop
       2: work_laptop
@@ -125,6 +151,10 @@ Configuration notes:
 - Device ownership is explicit.
 - Consistent host numbering across matrices is allowed but not required.
 - A USB route is valid only when the selected device and host are attached to the same matrix instance.
+- The orchestration layer resolves logical USB device and host IDs to `device_port` and
+  `host_port` before invoking the driver.
+- The driver consumes device-local ports and does not depend on environment-specific resource
+  names.
 
 ---
 
@@ -176,14 +206,31 @@ Route is invalid.
 
 The core planner should reject invalid cross-matrix routes before execution. The driver may still validate instance-local port values defensively.
 
+The driver maps Workspace Fabric `usb_route` actions containing `device_port` and `host_port` to
+UKM-404 route commands:
+
+```text
+set device x in host y
+```
+
+It queries route state with:
+
+```text
+get device x in host
+```
+
+The driver reports device-local port routes in observed state. The orchestration layer may
+correlate those ports back to user-facing resources when it has the resource graph context.
+
 ---
 
 ## Known Limitations
 
-- Route query support is unknown until verified.
+- Route query support is documented and implemented, but still needs physical validation.
 - Host emulation support is unknown until verified.
 - Device emulation support is unknown until verified.
 - Cross-matrix USB routing is not supported by a single UKM404 driver instance.
+- TCP/Telnet command framing and serial line-ending behavior still require hardware validation.
 
 ---
 
@@ -191,11 +238,11 @@ The core planner should reject invalid cross-matrix routes before execution. The
 
 | Test | Status | Notes |
 |------|--------|-------|
-| Unit tests | Planned | Driver logic and validation |
-| Mock transport tests | Planned | Command formatting and response parsing |
+| Unit tests | Implemented | Driver logic and validation |
+| Mock transport tests | Implemented | Command formatting and response parsing |
 | Physical connection test | Planned | Confirm transport and handshake |
 | Physical route test | Planned | Route device port to host port |
-| Route query test | Unknown | Depends on hardware support |
+| Route query test | Implemented with mocked transport | Physical validation pending |
 | Multiple instance test | Planned | Validate two independent UKM404 configs |
 | Invalid cross-matrix route test | Planned | Should fail in planner/config validation |
 
@@ -215,3 +262,8 @@ The core planner should reject invalid cross-matrix routes before execution. The
 ### YYYY-MM-DD
 
 - Initial driver documentation scaffold.
+
+### 2026-07-09
+
+- Implemented Milestone 3.3 driver routing/query behavior with mocked transport tests.
+- Added configurable TCP, Telnet, and RS-232 command transports.

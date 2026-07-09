@@ -49,16 +49,18 @@ class MockUsbMatrixDriver(MockDriverBase):
     def route_action(
         self,
         *,
-        device: str,
-        host: str,
         device_port: int,
         host_port: int,
+        device: str | None = None,
+        host: str | None = None,
     ) -> DriverAction:
+        device_id = device if device is not None else f"device_{device_port}"
+        host_id = host if host is not None else f"host_{host_port}"
         return DriverAction(
             action_type=USB_ROUTE_ACTION,
             payload={
-                "device": device,
-                "host": host,
+                "device": device_id,
+                "host": host_id,
                 "device_port": device_port,
                 "host_port": host_port,
             },

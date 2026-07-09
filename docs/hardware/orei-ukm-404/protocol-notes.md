@@ -23,7 +23,8 @@ for driver implementation lives in
 Status:
 
 - Documented by vendor manual.
-- Driver implementation planned.
+- Implemented in driver through configurable serial transport.
+- Physical validation pending.
 
 Connector:
 
@@ -51,7 +52,8 @@ Notes:
 Status:
 
 - Documented as management/control interfaces.
-- Command framing requires verification.
+- Implemented in driver through configurable TCP/Telnet-style socket transport.
+- Command framing requires physical verification.
 
 Connector:
 
@@ -124,15 +126,19 @@ TBD:
 
 ## Driver Mapping
 
+The orchestration layer must resolve Workspace Fabric USB device/host IDs to UKM-404
+device-local ports before calling the driver. The driver consumes `device_port` and `host_port`
+values and must not depend on deployment-specific resource names.
+
 | Workspace Fabric Driver Method | Protocol Command | Status |
 | --- | --- | --- |
-| Connect | Transport-specific open | Planned |
-| Disconnect | Transport-specific close | Planned |
-| Health | `status` or transport probe | Planned |
-| Route USB device to host | `set device x in host y` | Planned |
-| Query route state | `get device x in host` | Planned |
-| Query full state | `status` plus per-device route queries | Planned |
-| Query capabilities | Static driver capability report plus verified transport support | Planned |
+| Connect | Transport-specific open | Implemented, physical validation pending |
+| Disconnect | Transport-specific close | Implemented, physical validation pending |
+| Health | Connection state | Implemented |
+| Route USB device to host | `set device x in host y` | Implemented with mocked transport |
+| Query route state | `get device x in host` | Implemented with mocked transport |
+| Query full state | Per-device route queries | Implemented with mocked transport |
+| Query capabilities | Static driver capability report plus verified transport support | Implemented |
 | Query firmware/system info | `get model`, `get version` | Planned |
 | Configure network | `set ip mode z`, `set ip addr ...`, `set subnet ...`, `set gateway ...`, `set tcp/ip port x`, `set telnet port x` | Not planned for initial driver |
 | Reboot network module | `set net reboot` | Not planned for initial driver |
@@ -179,11 +185,11 @@ during driver validation.
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| RS-232 transport | Planned | Vendor documented |
-| TCP/IP transport | Unknown | Control port documented, command framing TBD |
-| Telnet transport | Unknown | Port documented, command framing TBD |
-| Device-to-host routing | Planned | `set device x in host y` |
-| Route query | Planned | `get device x in host`; verify on hardware |
+| RS-232 transport | Implemented, physical validation pending | Vendor documented |
+| TCP/IP transport | Implemented, physical validation pending | Control port documented, command framing TBD |
+| Telnet transport | Implemented, physical validation pending | Port documented, command framing TBD |
+| Device-to-host routing | Implemented with mocked transport | `set device x in host y` |
+| Route query | Implemented with mocked transport | `get device x in host`; verify on hardware |
 | Multiple instances | Planned | Required by reference deployment |
 | USB 3 support | Documented | USB 3.2 Gen 1 |
 | Host emulation | Unknown | Not documented |

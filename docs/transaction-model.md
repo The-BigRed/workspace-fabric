@@ -75,15 +75,23 @@ transaction:
       type: usb_route
       device: keyboard
       host: desktop
+      device_port: 1
+      host_port: 1
 
     - driver: ukm404_a
       type: usb_route
       device: camera
       host: work_laptop
+      device_port: 3
+      host_port: 2
 ```
 
 For hardware video drivers, `source` and `destination` are explanatory resource context. The
 orchestration layer resolves them to device-local `input_port` and `output_port` values before the
+driver applies the route.
+
+For hardware USB matrix drivers, `device` and `host` are explanatory resource context. The
+orchestration layer resolves them to device-local `device_port` and `host_port` values before the
 driver applies the route.
 
 ## Validation

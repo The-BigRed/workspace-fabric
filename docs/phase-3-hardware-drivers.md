@@ -11,14 +11,14 @@ Milestone 3.2: OREI UHD-808 Video Driver
 - Query current routing state if supported
 - Add integration-safe tests with mocked transport
 
-Milestone 3.3: OREI UKM404 USB Driver
+Milestone 3.3: OREI UKM-404 USB Driver
 - Implement USB matrix routing
 - Map device ports to host ports
 - Query state if supported
 - Add mocked transport tests
 
 Milestone 3.4: Hardware Lab Config
-- Create examples/brad-lab.yaml or examples/physical-local.yaml
+- Create examples/test-lab.yaml or examples/physical-local.yaml
 - Map real matrix ports to hosts, displays, and USB endpoints
 - Use descriptive composite USB names where needed
 

@@ -73,18 +73,13 @@ def test_mock_usb_driver_satisfies_stable_usb_interface() -> None:
     driver = MockUsbMatrixDriver("mock_usb")
 
     assert isinstance(driver, UsbMatrixDriver)
-    action = driver.route_action(
-        device="keyboard",
-        host="desktop",
-        device_port=1,
-        host_port=2,
-    )
+    action = driver.route_action(device_port=1, host_port=2)
     validation = driver.validate_action(action)
 
     assert action.action_type == DriverActionType.USB_ROUTE.value
     assert action.payload == {
-        "device": "keyboard",
-        "host": "desktop",
+        "device": "device_1",
+        "host": "host_2",
         "device_port": 1,
         "host_port": 2,
     }

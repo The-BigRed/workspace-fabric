@@ -130,7 +130,7 @@ The stable route action names for Phase 3 are:
 | Action type | Driver interface | Required payload |
 | --- | --- | --- |
 | `video_route` | `VideoMatrixDriver` | `input_port`, `output_port` |
-| `usb_route` | `UsbMatrixDriver` | `device`, `host`, `device_port`, `host_port` |
+| `usb_route` | `UsbMatrixDriver` | `device_port`, `host_port` |
 
 Video matrix drivers should implement:
 
@@ -147,8 +147,13 @@ driver.
 USB matrix drivers should implement:
 
 ```python
-route_action(*, device: str, host: str, device_port: int, host_port: int) -> DriverAction
+route_action(*, device_port: int, host_port: int) -> DriverAction
 ```
+
+The transaction planner may include logical resource IDs such as `device` and `host` in the
+action payload for logging, dry-run output, and transaction history. Hardware USB matrix drivers
+must not depend on those user-facing names to operate. The orchestration layer is responsible for
+resolving logical USB devices and hosts to device-local physical ports before invoking the driver.
 
 `DriverAction.timeout_seconds` may be set by the core or a future interface. Drivers that can
 enforce timeouts should return a structured `timeout` error when the timeout is exceeded. Drivers

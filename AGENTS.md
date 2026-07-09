@@ -14,19 +14,22 @@ Start with these documents, in this order:
 3. `CONTRIBUTING.md` for contribution expectations.
 4. `ai/project.md` for AI-specific project context, current phase, priorities,
    and explicit non-goals.
-5. `docs/philosophy.md` for the engineering philosophy and design litmus test.
-6. `docs/architecture.md` for the layered architecture and core boundaries.
-7. `docs/resource-model.md`, `docs/configuration-model.md`,
+5. `ai/tasks/` contains reusable implementation workflows. Use the task that
+   best matches the requested work before inventing a new implementation
+   process.
+6. `docs/philosophy.md` for the engineering philosophy and design litmus test.
+7. `docs/architecture.md` for the layered architecture and core boundaries.
+8. `docs/resource-model.md`, `docs/configuration-model.md`,
    `docs/capability-model.md`, and `docs/transaction-model.md` for the core
    models.
-8. `docs/driver-contract.md` before writing or changing any driver code.
-9. `PROJECT_STATUS.md` for the current milestone, then the corresponding phase document
+9. `docs/driver-contract.md` before writing or changing any driver code.
+10.`PROJECT_STATUS.md` for the current milestone, then the corresponding phase document
     (for example, `docs/phase-3-hardware-drivers.md`), followed by `ai/implementation-roadmap.md`.
-10. `docs/developer-standards.md` and `ai/coding-guidelines.md` before making
+11. `docs/developer-standards.md` and `ai/coding-guidelines.md` before making
    code changes.
-11. `design/decisions/` for accepted Architecture Decision Records.
-12. `examples/local-workspace.yaml` for the current mock configuration shape.
-13. `docs/reference-platform.md` and and the appropriate device directory under `docs/hardware/`
+12. `design/decisions/` for accepted Architecture Decision Records.
+13. `examples/local-workspace.yaml` for the current mock configuration shape.
+14. `docs/reference-platform.md` and and the appropriate device directory under `docs/hardware/`
     for reference hardware context before hardware-related work.
 
 Use `docs/glossary.md` whenever terminology is unclear.
@@ -135,6 +138,9 @@ until the Phase 3 hardware milestones are complete.
   with `protocol-notes.md` and `driver.md`. Newly verified hardware behavior
   should be recorded in `observations.md` when it differs from vendor
   documentation or materially affects driver behavior.
+- Prefer reusable workflows in `ai/tasks/` over creating ad hoc
+  implementation processes. Update the appropriate task when a better
+  repeatable process is discovered.
 
 ## Coding Standards
 

@@ -133,8 +133,6 @@ class UsbMatrixDriver(Driver, Protocol):
     def route_action(
         self,
         *,
-        device: str,
-        host: str,
         device_port: int,
         host_port: int,
     ) -> DriverAction: ...
