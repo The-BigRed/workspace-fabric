@@ -8,130 +8,260 @@ Use this file to capture verified behavior, quirks, deployment notes, and lesson
 
 Codex may read this file when implementing the driver, but changes to driver behavior should be reflected in `protocol-notes.md` when they become part of the stable driver contract.
 
-## Role in Reference Deployment
+---
 
-The OREI UHD-808 is the initial reference video matrix for Workspace Fabric.
+# Role in Reference Deployment
 
-It provides video routing between multiple source devices and displays.
+The UHD-808 is the reference HDMI video matrix used by Workspace Fabric.
 
-Initial source devices may include:
+Current reference deployment includes:
 
-- Personal desktop.
-- Work laptop.
-- PiKVM.
-- Future auxiliary systems.
+- Personal desktop
+- Work laptop
+- PiKVM
+- Primary 4K display
+- Secondary 2K display
 
-Initial destinations may include:
+The UHD-808 provides dynamic video routing between these resources under control of the Workspace Fabric controller.
 
-- Primary 4K display.
-- Secondary 2K display.
-- PiKVM capture input.
-- Future outputs.
+---
 
-## Observed Behavior: Active HDMI Link
+# Observed Behavior: Active HDMI Link
 
 The UHD-808 maintains an active HDMI link to upstream source devices even when a source is not currently routed to a visible display.
 
 Impact:
 
-- Source systems may continue to believe displays are connected.
-- Windows may not automatically disable displays that are no longer visible to the user.
-- Switching can be fast because links remain active.
-- Workspace Fabric may need an optional Windows Display Agent for OS-level display management.
+- Source systems continue to believe displays remain connected.
+- Windows does not automatically reconfigure the desktop when routing changes.
+- Switching is effectively instantaneous because HDMI links remain trained.
 
-This behavior is not inherently wrong. It may be beneficial in some deployments and undesirable in others.
+This behavior is not inherently incorrect. It favors rapid switching over dynamic display enumeration.
 
-Driver implication:
+Driver implications:
 
-- The UHD-808 driver should report HPD/source-disable behavior as unsupported unless a verified hardware command exists.
-- Operating-system display enable/disable behavior should be handled by a separate host-side display agent.
+- HPD/source-disable should be reported as unsupported unless a verified hardware command is discovered.
+- Windows display management should remain the responsibility of the Windows Display Agent.
+- Operating-system display state and physical HDMI routing are intentionally separate concerns.
 
-## EDID Management Observations
+---
 
-The UHD-808 can clone EDID from a destination display.
+# EDID Management Observations
+
+The UHD-808 supports EDID cloning from connected displays.
 
 Observed behavior:
 
-- EDID can be cloned.
-- EDID does not automatically follow routing changes.
-- EDID management should be exposed as an explicit driver capability.
+- EDID cloning is supported.
+- EDID assignments do not automatically follow routing changes.
+- EDID management should remain an explicit capability rather than an implicit part of routing.
 
 Driver implications:
 
 - Expose EDID clone if supported.
-- Expose EDID profile apply if supported.
-- Do not make EDID management part of basic route behavior.
-- Allow scenes to request EDID behavior through capability policies.
+- Expose EDID profile application when verified.
+- Allow workspace capability policies to control EDID behavior.
 
-## Scaling and Upscaling Observations
+---
 
-The UHD-808 includes scaling/upscaling functionality.
+# Scaling and Upscaling Observations
+
+The UHD-808 includes hardware scaling.
 
 Driver implications:
 
-- Expose scaling as an optional capability.
-- Treat scaling as associated with route/output behavior, not as a special display type.
-- Support `prefer` and `require` policies from the capability model.
+- Treat scaling as an optional capability.
+- Associate scaling with video routes rather than displays.
+- Honor capability policies such as `prefer` and `require`.
 
-## Fast Switching Observations
+---
 
-The UHD-808 supports fast switching.
+# Fast Switching Observations
+
+The UHD-808 supports rapid route switching.
 
 Driver implications:
 
 - Expose fast switching as an optional capability.
-- Do not assume fast switching exists in all video matrix drivers.
-- Allow workspace definitions to prefer or require fast switching.
+- Do not assume fast switching exists on all video matrices.
+- Continue modeling it through the capability system.
 
-## Relationship to Windows Display Agent
+---
 
-Because the UHD-808 maintains active upstream links, a separate Windows Display Agent may be needed to enable or disable displays at the operating system level.
+# Telnet / TCP Control Observations
 
-The UHD-808 driver and Windows Display Agent should remain separate drivers coordinated by the Workspace Fabric transaction engine.
+Physical validation completed during Milestone 3.5.
 
-## Non-Goals for UHD-808 Driver
+Verified behavior:
+
+- The Telnet interface accepts the documented ASCII command set.
+- RS-232 commands are protocol-compatible with the Telnet interface.
+- Commands should be terminated with CRLF after the documented `!` delimiter.
+- The controller echoes every command before returning its response.
+- A Telnet session may begin with Telnet negotiation bytes and a welcome banner.
+- The firmware banner includes the current firmware version.
+- Command responses follow the echoed command and banner.
+
+Example session:
+
+```text
+r av out 0!
+
+****************Welcome **************
+            FW Version :V2.03.01
+**************************************
+
+input 1 -> output 1
+input 4 -> output 2
+...
+```
+
+Driver implications:
+
+- The transport layer must continue reading after the echoed command.
+- The parser must ignore Telnet negotiation bytes.
+- The parser must ignore echoed commands.
+- The parser must ignore banner text.
+- Route parsing should operate only on valid response lines.
+
+This behavior belongs entirely within the driver transport layer and should remain invisible to the Workspace Fabric core.
+
+---
+
+# Route Query Observations
+
+The documented route query command:
+
+```text
+r av out 0!
+```
+
+was successfully validated on physical hardware.
+
+Observed response format:
+
+```text
+input <source> -> output <destination>
+```
+
+One line is returned for every output.
+
+Driver implications:
+
+- Route reconciliation can rely on hardware state rather than assumed state.
+- Observed state should continue to report physical port mappings.
+- The orchestration layer remains responsible for mapping physical ports back to logical resources.
+
+---
+
+# Relationship to Windows Display Agent
+
+Because the UHD-808 intentionally maintains active upstream HDMI links, operating-system display management remains outside the responsibility of the video driver.
+
+The Windows Display Agent should provide:
+
+- Display enable/disable
+- Primary display selection
+- Desktop layout management
+- Operating-system display state reporting
+
+The UHD-808 driver and Windows Display Agent remain independent drivers coordinated by the transaction engine.
+
+---
+
+# Non-Goals for UHD-808 Driver
 
 The UHD-808 driver should not:
 
-- Manage Windows display settings directly.
-- Pretend to disable upstream displays if the hardware cannot do so.
-- Assume all HDMI matrices have the same capabilities.
-- Encode user-facing workspace logic.
+- Manage Windows display settings.
+- Attempt to emulate HPD behavior.
+- Encode workspace policy.
+- Assume all HDMI matrices expose identical capabilities.
+- Translate physical ports into user-facing resource names.
 
-## Lab Validation Log
+---
 
-Use this section as a running log for physical testing.
+# Lab Validation Log
 
-### YYYY-MM-DD - Test title
+## 2026-07-10 — Phase 3.5 Physical Smoke Test
 
 Setup:
 
-- TODO
+- Workspace Fabric controller connected to physical UHD-808 via Telnet.
+- Physical routing configuration loaded from `physical-local.yaml`.
+- Personal desktop and work laptop connected as video sources.
+- Primary 4K and secondary 2K monitors connected as outputs.
 
-Action:
+Actions:
 
-- TODO
+- Applied the `desktop` workspace.
+- Verified route commands.
+- Queried routing state.
+- Performed direct Telnet protocol validation using PowerShell.
 
-Observed result:
+Observed Results:
 
-- TODO
+- Physical routing succeeded.
+- Workspace Fabric successfully controlled the UHD-808.
+- Route state queries returned the expected routing table.
+- Telnet command protocol matched the documented RS-232 command set.
+- Telnet sessions echo commands before returning results.
+- Welcome banner and firmware information are emitted during the session.
+- Initial transport issues were resolved by improving response handling.
+- End-to-end physical smoke tests completed successfully.
 
-Driver decision:
+Driver Decisions:
 
-- TODO
+- Continue using Telnet as the primary transport.
+- Keep protocol normalization inside the driver transport.
+- Preserve raw responses for diagnostics while parsing normalized responses.
 
 Follow-up:
 
-- TODO
+- Record firmware version.
+- Expand physical testing to EDID management.
+- Validate scaler commands.
+- Validate CEC command handling.
 
-## Open Questions
+---
 
-Track unresolved hardware behavior here until it is confirmed.
+# Firmware Validation
+
+Validated firmware:
+
+| Component | Version |
+|-----------|---------|
+| MCU / Web GUI | V2.03.01 |
+
+---
+
+# Open Questions
 
 | Question | Status | Notes |
-|---|---:|---|
-| Does Telnet use the exact same command set as RS232? | unverified | Confirm from manual and physical test. |
-| Can current routing state be queried? | unverified | Needed for route reconciliation. |
-| Can saved EDID profiles be applied, or only cloned? | unverified | Impacts capability report. |
-| Are CEC commands exposed through the control protocol? | unverified | Keep separate from routing. |
-| Can HPD behavior be controlled by command? | expected unsupported | Current observation suggests active links are maintained. |
+|----------|:------:|------|
+| Does Telnet use the same command set as RS-232? | ✅ Verified | Physical testing confirms protocol compatibility. |
+| Can current routing state be queried? | ✅ Verified | `r av out 0!` returns one route per output. |
+| Can saved EDID profiles be applied, or only cloned? | Pending | Requires additional testing. |
+| Are CEC commands exposed through the control protocol? | Pending | Documented but not yet validated. |
+| Can HPD behavior be controlled by command? | Expected Unsupported | No verified command discovered. |
+| Do scaler commands behave as documented? | Pending | Requires hardware validation. |
+| Does EDID profile application persist across reboot? | Pending | Requires testing. |
+
+---
+
+# Milestone Status
+
+Current physical validation status:
+
+| Feature | Status |
+|---------|--------|
+| Telnet connectivity | ✅ Verified |
+| Command protocol | ✅ Verified |
+| Video routing | ✅ Verified |
+| Route state query | ✅ Verified |
+| Physical smoke test | ✅ Verified |
+| EDID clone | Pending |
+| EDID apply | Pending |
+| Scaler control | Pending |
+| CEC | Pending |
+| ARC | Pending |
