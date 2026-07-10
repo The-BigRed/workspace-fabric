@@ -70,6 +70,98 @@ def test_config_validate_accepts_physical_lab_configuration(tmp_path: Path) -> N
     assert validate_error == ""
 
 
+def test_physical_lab_smoke_workspaces_dry_run_with_hardware_drivers(tmp_path: Path) -> None:
+    state_file = tmp_path / "state.json"
+
+    for workspace_id in ("desktop", "work", "hybrid_meeting"):
+        dry_run_code, dry_run_output, dry_run_error = run_cli(
+            WorkspaceFabricCLI(),
+            [
+                "apply",
+                "--config",
+                "examples/physical-local.yaml",
+                workspace_id,
+                "--dry-run",
+            ],
+            state_file=state_file,
+        )
+
+        actions = dry_run_output["transaction"]["actions"]
+
+        assert dry_run_code == 0
+        assert dry_run_output["transaction"]["workspace"] == workspace_id
+        assert dry_run_output["transaction"]["dry_run"] is True
+        assert actions[0]["driver"] == "video_matrix_uhd808"
+        assert actions[0]["steps"][0].startswith("send UHD-808 video route command")
+        assert dry_run_error == ""
+
+    hybrid_actions = dry_run_output["transaction"]["actions"]
+    assert [action["driver"] for action in hybrid_actions] == [
+        "video_matrix_uhd808",
+        "video_matrix_uhd808",
+        "usb_matrix_ukm404_a",
+        "usb_matrix_ukm404_a",
+        "usb_matrix_ukm404_b",
+        "usb_matrix_ukm404_b",
+        "usb_matrix_ukm404_b",
+    ]
+    assert hybrid_actions[0]["input_port"] == 1
+    assert hybrid_actions[0]["output_port"] == 1
+    assert hybrid_actions[1]["input_port"] == 3
+    assert hybrid_actions[1]["output_port"] == 2
+    assert hybrid_actions[4]["device_port"] == 1
+    assert hybrid_actions[4]["host_port"] == 2
+
+
+def test_physical_lab_state_does_not_replay_saved_hardware_actions(tmp_path: Path) -> None:
+    config_path = Path("examples/physical-local.yaml")
+    state_file = tmp_path / "physical-state.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "config_path": str(config_path),
+                "transactions": [
+                    {
+                        "id": "tx_previous",
+                        "workspace": "desktop",
+                        "status": "success",
+                        "actions": [
+                            {
+                                "driver": "video_matrix_uhd808",
+                                "type": "video_route",
+                                "status": "success",
+                                "input_port": 1,
+                                "output_port": 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    state_code, state_output, state_error = run_cli(
+        WorkspaceFabricCLI(),
+        ["state", "--config", str(config_path)],
+        state_file=state_file,
+    )
+
+    assert state_code == 0
+    assert state_output["state"]["drivers"]["video_matrix_uhd808"]["state_status"] == "unknown"
+    assert state_output["state"]["drivers"]["video_matrix_uhd808"]["routes"] == {}
+    assert state_output["state"]["transactions"] == [
+        {
+            "id": "tx_previous",
+            "workspace": "desktop",
+            "status": "success",
+            "recorded_at": None,
+        }
+    ]
+    assert state_error == ""
+
+
 def test_apply_dry_run_returns_plan_without_updating_state(tmp_path: Path) -> None:
     cli = WorkspaceFabricCLI()
     state_file = tmp_path / "state.json"

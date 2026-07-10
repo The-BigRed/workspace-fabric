@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import socket
 from collections.abc import Mapping
 
 from workspace_fabric.drivers import (
@@ -12,6 +13,7 @@ from workspace_fabric.drivers.video import (
     OreiUhd808ConnectionError,
     OreiUhd808TimeoutError,
     OreiUhd808VideoDriver,
+    SocketCommandTransport,
     parse_route_response,
     response_confirms_route,
     route_command,
@@ -52,6 +54,28 @@ class ScriptedTransport:
         return response
 
 
+class ChunkedSocket:
+    def __init__(self, chunks: list[bytes]) -> None:
+        self.chunks = list(chunks)
+        self.sent: list[bytes] = []
+        self.timeouts: list[float] = []
+        self.closed = False
+
+    def settimeout(self, timeout: float) -> None:
+        self.timeouts.append(timeout)
+
+    def sendall(self, data: bytes) -> None:
+        self.sent.append(data)
+
+    def recv(self, size: int) -> bytes:
+        if self.chunks:
+            return self.chunks.pop(0)
+        raise TimeoutError("idle")
+
+    def close(self) -> None:
+        self.closed = True
+
+
 def make_driver(transport: ScriptedTransport) -> OreiUhd808VideoDriver:
     return OreiUhd808VideoDriver(
         "uhd808",
@@ -59,8 +83,73 @@ def make_driver(transport: ScriptedTransport) -> OreiUhd808VideoDriver:
     )
 
 
+def make_socket_transport(
+    monkeypatch,
+    chunks: list[bytes],
+) -> tuple[SocketCommandTransport, ChunkedSocket]:
+    fake_socket = ChunkedSocket(chunks)
+    monkeypatch.setattr(
+        socket,
+        "create_connection",
+        lambda address, timeout: fake_socket,
+    )
+    transport = SocketCommandTransport(
+        "172.24.2.192",
+        port=23,
+        read_timeout_seconds=2.0,
+        idle_timeout_seconds=0.25,
+    )
+    return transport, fake_socket
+
+
 def test_uhd808_route_command_matches_vendor_syntax() -> None:
     assert route_command(1, 2) == "s in 1 av out 2!"
+
+
+def test_uhd808_socket_transport_sends_crlf_and_reads_split_response(monkeypatch) -> None:
+    transport, fake_socket = make_socket_transport(
+        monkeypatch,
+        [
+            b"Welcome to UHD-808\r\n",
+            b"r av out 0!\r\n",
+            b"input 1 -> output 1\r\n",
+        ],
+    )
+
+    response = transport.send_command("r av out 0!")
+
+    assert fake_socket.sent == [b"r av out 0!\r\n"]
+    assert response == "Welcome to UHD-808\r\nr av out 0!\r\ninput 1 -> output 1"
+    assert parse_route_response(response, echo_command="r av out 0!") == {1: 1}
+
+
+def test_uhd808_socket_transport_discards_telnet_negotiation_bytes(monkeypatch) -> None:
+    telnet_negotiation = bytes(
+        [
+            255,
+            251,
+            1,
+            255,
+            253,
+            3,
+        ]
+    )
+    transport, fake_socket = make_socket_transport(
+        monkeypatch,
+        [
+            telnet_negotiation[:1],
+            telnet_negotiation[1:4],
+            telnet_negotiation[4:] + b"r av out 0!\r\n",
+            b"input 1 -> output 1\r\n",
+        ],
+    )
+
+    response = transport.send_command("r av out 0!")
+
+    assert fake_socket.sent == [b"r av out 0!\r\n"]
+    assert "\ufffd" not in response
+    assert response == "r av out 0!\r\ninput 1 -> output 1"
+    assert parse_route_response(response, echo_command="r av out 0!") == {1: 1}
 
 
 def test_uhd808_route_response_parser_reads_query_output() -> None:
@@ -72,6 +161,66 @@ def test_uhd808_route_response_parser_reads_query_output() -> None:
     assert parse_route_response(response) == {1: 1, 2: 3}
     assert response_confirms_route(response, input_port=3, output_port=2)
     assert not response_confirms_route(response, input_port=2, output_port=2)
+
+
+def test_uhd808_route_parser_ignores_echo_welcome_and_firmware_banner() -> None:
+    response = """
+    r av out 0!
+    Welcome to UHD-808
+    MCU BOOT: 1.0.0
+    WEB GUI: 2.0.0
+    input 1 -> output 1
+    input 3 -> output 2
+    """
+
+    assert parse_route_response(response, echo_command="r av out 0!") == {1: 1, 2: 3}
+
+
+def test_uhd808_route_confirmation_requires_actual_route_response() -> None:
+    command = route_command(2, 2)
+    response = f"""
+    {command}
+    Welcome to UHD-808
+    input 2 -> output 2
+    """
+
+    assert response_confirms_route(
+        response,
+        input_port=2,
+        output_port=2,
+        echo_command=command,
+    )
+    assert not response_confirms_route(
+        command,
+        input_port=2,
+        output_port=2,
+        echo_command=command,
+    )
+
+
+def test_uhd808_route_parser_reads_full_eight_output_query() -> None:
+    route_lines = [
+        f"input {input_port} -> output {output_port}"
+        for output_port, input_port in enumerate(range(8, 0, -1), start=1)
+    ]
+    response = "\r\n".join(
+        [
+            "r av out 0!",
+            "Welcome to UHD-808",
+            *route_lines,
+        ]
+    )
+
+    assert parse_route_response(response, echo_command="r av out 0!") == {
+        1: 8,
+        2: 7,
+        3: 6,
+        4: 5,
+        5: 4,
+        6: 3,
+        7: 2,
+        8: 1,
+    }
 
 
 def test_uhd808_driver_satisfies_video_matrix_contract() -> None:
@@ -126,6 +275,19 @@ def test_uhd808_driver_query_state_uses_documented_route_query_command() -> None
     assert transport.commands == ["r av out 0!"]
     assert state["state_status"] == "observed"
     assert state["routes"] == {"1": "2"}
+
+
+def test_uhd808_echo_only_route_query_reports_state_query_failure() -> None:
+    transport = ScriptedTransport({"r av out 0!": ["r av out 0!"]})
+    driver = make_driver(transport)
+    driver.connect()
+
+    state = driver.get_state()
+
+    assert state["state_status"] == "unknown"
+    assert state["routes"] == {}
+    assert "raw response" in state["state_error"]
+    assert "r av out 0!" in state["state_error"]
 
 
 def test_uhd808_driver_requires_port_payload() -> None:

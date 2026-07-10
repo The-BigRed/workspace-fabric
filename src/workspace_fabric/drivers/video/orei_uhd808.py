@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import socket
+import time
 from collections.abc import Mapping
 from typing import Any, Protocol
 
@@ -28,8 +29,15 @@ ROUTE_QUERY_CAPABILITY = "route_query"
 ROUTE_QUERY_COMMAND = "r av out 0!"
 MIN_HDMI_PORT = 1
 MAX_HDMI_PORT = 8
+TELNET_IAC = 255
+TELNET_SE = 240
+TELNET_SB = 250
+TELNET_COMMANDS_WITH_OPTION = frozenset({251, 252, 253, 254})
 
-_ROUTE_PATTERN = re.compile(r"input\s+(\d+)\s*->\s*output\s+(\d+)", re.IGNORECASE)
+_ROUTE_PATTERN = re.compile(
+    r"^\s*input\s+(\d+)\s*->\s*output\s+(\d+)\s*$",
+    re.IGNORECASE,
+)
 
 
 class OreiUhd808TransportError(Exception):
@@ -62,13 +70,17 @@ class SocketCommandTransport:
         port: int,
         connect_timeout_seconds: float = 5.0,
         read_timeout_seconds: float = 2.0,
+        idle_timeout_seconds: float = 0.5,
         encoding: str = "ascii",
+        line_ending: str = "\r\n",
     ) -> None:
         self.host = host
         self.port = port
         self.connect_timeout_seconds = connect_timeout_seconds
         self.read_timeout_seconds = read_timeout_seconds
+        self.idle_timeout_seconds = idle_timeout_seconds
         self.encoding = encoding
+        self.line_ending = line_ending
         self._socket: socket.socket | None = None
 
     def connect(self) -> None:
@@ -103,12 +115,25 @@ class SocketCommandTransport:
         assert self._socket is not None
 
         read_timeout = timeout_seconds or self.read_timeout_seconds
-        self._socket.settimeout(read_timeout)
+        idle_timeout = min(self.idle_timeout_seconds, read_timeout)
+        deadline = time.monotonic() + read_timeout
+        framed_command = f"{command}{self.line_ending}".encode(self.encoding)
 
         try:
-            self._socket.sendall(command.encode(self.encoding))
+            self._socket.sendall(framed_command)
             chunks: list[bytes] = []
+            pending_telnet_bytes = b""
             while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    if chunks:
+                        break
+                    raise OreiUhd808TimeoutError(
+                        f"Timed out waiting for UHD-808 response to {command!r}"
+                    )
+
+                recv_timeout = min(idle_timeout if chunks else read_timeout, remaining)
+                self._socket.settimeout(recv_timeout)
                 try:
                     chunk = self._socket.recv(4096)
                 except TimeoutError as exc:
@@ -120,7 +145,12 @@ class SocketCommandTransport:
 
                 if not chunk:
                     break
-                chunks.append(chunk)
+                cleaned_chunk, pending_telnet_bytes = _strip_telnet_negotiation(
+                    chunk,
+                    pending=pending_telnet_bytes,
+                )
+                if cleaned_chunk:
+                    chunks.append(cleaned_chunk)
 
             return b"".join(chunks).decode(self.encoding, errors="replace").strip()
         except OreiUhd808TransportError:
@@ -342,7 +372,12 @@ class OreiUhd808VideoDriver:
         except OreiUhd808TransportError as exc:
             return self._transport_failure_result(action, exc)
 
-        if not response_confirms_route(response, input_port=input_port, output_port=output_port):
+        if not response_confirms_route(
+            response,
+            input_port=input_port,
+            output_port=output_port,
+            echo_command=command,
+        ):
             return DriverActionResult(
                 driver_id=self.id,
                 action=action,
@@ -351,8 +386,9 @@ class OreiUhd808VideoDriver:
                     DriverIssue(
                         category=DriverIssueCategory.HARDWARE_REJECTED_COMMAND.value,
                         message=(
-                            f"UHD-808 response did not confirm route command {command!r}: "
-                            f"{response!r}"
+                            f"UHD-808 response did not contain confirmed route "
+                            f"{input_port!r} -> {output_port!r} for command {command!r}; "
+                            f"raw response: {response!r}"
                         ),
                     ),
                 ),
@@ -407,10 +443,10 @@ class OreiUhd808VideoDriver:
         response = self._transport.send_command(
             ROUTE_QUERY_COMMAND, timeout_seconds=timeout_seconds
         )
-        routes = parse_route_response(response)
+        routes = parse_route_response(response, echo_command=ROUTE_QUERY_COMMAND)
         if not routes:
             raise OreiUhd808TransportError(
-                f"UHD-808 route query returned no parseable routes: {response!r}"
+                f"UHD-808 route query returned no parseable routes; raw response: {response!r}"
             )
         return routes
 
@@ -491,17 +527,75 @@ def route_command(input_port: int, output_port: int) -> str:
     return f"s in {input_port} av out {output_port}!"
 
 
-def parse_route_response(response: str) -> dict[int, int]:
+def parse_route_response(response: str, *, echo_command: str | None = None) -> dict[int, int]:
+    response_to_parse = _remove_exact_echoed_command(response, echo_command)
     routes: dict[int, int] = {}
-    for match in _ROUTE_PATTERN.finditer(response):
-        input_port = int(match.group(1))
-        output_port = int(match.group(2))
-        routes[output_port] = input_port
+    for line in response_to_parse.splitlines():
+        match = _ROUTE_PATTERN.fullmatch(line)
+        if match is not None:
+            input_port = int(match.group(1))
+            output_port = int(match.group(2))
+            routes[output_port] = input_port
     return routes
 
 
-def response_confirms_route(response: str, *, input_port: int, output_port: int) -> bool:
-    return parse_route_response(response).get(output_port) == input_port
+def response_confirms_route(
+    response: str,
+    *,
+    input_port: int,
+    output_port: int,
+    echo_command: str | None = None,
+) -> bool:
+    return parse_route_response(response, echo_command=echo_command).get(output_port) == input_port
+
+
+def _remove_exact_echoed_command(response: str, echo_command: str | None) -> str:
+    if echo_command is None:
+        return response
+
+    lines = response.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    for index, line in enumerate(lines):
+        if line.strip() == echo_command:
+            return "\n".join([*lines[:index], *lines[index + 1 :]])
+    return response
+
+
+def _strip_telnet_negotiation(chunk: bytes, *, pending: bytes = b"") -> tuple[bytes, bytes]:
+    data = pending + chunk
+    stripped = bytearray()
+    index = 0
+
+    while index < len(data):
+        byte = data[index]
+        if byte != TELNET_IAC:
+            stripped.append(byte)
+            index += 1
+            continue
+
+        if index + 1 >= len(data):
+            return bytes(stripped), data[index:]
+
+        command = data[index + 1]
+        if command == TELNET_IAC:
+            stripped.append(TELNET_IAC)
+            index += 2
+        elif command in TELNET_COMMANDS_WITH_OPTION:
+            if index + 2 >= len(data):
+                return bytes(stripped), data[index:]
+            index += 3
+        elif command == TELNET_SB:
+            index += 2
+            while index + 1 < len(data) and not (
+                data[index] == TELNET_IAC and data[index + 1] == TELNET_SE
+            ):
+                index += 1
+            if index + 1 >= len(data):
+                return bytes(stripped), data[index:]
+            index += 2
+        else:
+            index += 2
+
+    return bytes(stripped), b""
 
 
 def _default_capabilities() -> dict[str, str]:

@@ -28,6 +28,7 @@ Milestone 3.5: End-to-End Physical Smoke Test
 - Apply hybrid meeting workspace
 - Confirm physical video and USB routing changes
 - Confirm observed state matches expected state
+- Procedure: docs/hardware/physical-smoke-test.md
 
 Milestone 3.6: Safety and Recovery
 - Add dry-run-first recommendation

@@ -13,8 +13,7 @@ from workspace_fabric.config import ConfigValidationError, WorkspaceFabricConfig
 from workspace_fabric.core.graph import ResourceGraph, ResourceGraphError, build_resource_graph
 from workspace_fabric.core.planner import plan_workspace
 from workspace_fabric.core.transactions import InMemoryTransactionHistory, TransactionExecutor
-from workspace_fabric.drivers import Driver, DriverAction
-from workspace_fabric.drivers.mock import create_mock_drivers
+from workspace_fabric.drivers import Driver, DriverAction, create_drivers, is_mock_driver_type
 
 DEFAULT_CONFIG_PATH = Path("examples/local-workspace.yaml")
 DEFAULT_STATE_PATH = Path("runtime/state/workspace-fabric-mock-state.json")
@@ -130,12 +129,17 @@ class WorkspaceFabricRuntime:
 
         self._load_config_graph()
         assert self._config is not None
-        drivers = create_mock_drivers(self._config.drivers.values())
+        drivers = create_drivers(self._config.drivers.values())
         transactions = _transactions_for_config(
             _load_state_file(self.state_path),
             self.config_path,
         )
-        _replay_transactions(drivers, transactions)
+        replay_driver_ids = {
+            config.id
+            for config in self._config.drivers.values()
+            if is_mock_driver_type(config.type)
+        }
+        _replay_transactions(drivers, transactions, replay_driver_ids)
 
         self._drivers = drivers
         self._transactions = transactions
@@ -287,7 +291,7 @@ def build_parser() -> argparse.ArgumentParser:
     apply_parser.add_argument("workspace_id", metavar="workspace")
     apply_parser.add_argument("--dry-run", action="store_true", help="Preview without applying.")
 
-    state_parser = subcommands.add_parser("state", help="Show observed mock driver state.")
+    state_parser = subcommands.add_parser("state", help="Show observed driver state.")
     _add_runtime_arguments(state_parser)
 
     return parser
@@ -357,13 +361,21 @@ def _transactions_for_config(state: dict[str, Any], config_path: Path) -> list[d
     return list(state["transactions"])
 
 
-def _replay_transactions(drivers: dict[str, Driver], transactions: list[dict[str, Any]]) -> None:
+def _replay_transactions(
+    drivers: dict[str, Driver],
+    transactions: list[dict[str, Any]],
+    replay_driver_ids: set[str],
+) -> None:
     for transaction in transactions:
         for action in transaction.get("actions", []):
             if not isinstance(action, dict) or action.get("status") != "success":
                 continue
 
-            driver = drivers.get(str(action.get("driver")))
+            driver_id = str(action.get("driver"))
+            if driver_id not in replay_driver_ids:
+                continue
+
+            driver = drivers.get(driver_id)
             action_type = action.get("type")
             if driver is None or not isinstance(action_type, str):
                 continue

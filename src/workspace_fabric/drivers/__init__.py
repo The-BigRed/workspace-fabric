@@ -15,8 +15,15 @@ from workspace_fabric.drivers.base import (
     UsbMatrixDriver,
     VideoMatrixDriver,
 )
+from workspace_fabric.drivers.factory import (
+    DRIVER_TYPES,
+    create_driver,
+    create_drivers,
+    is_mock_driver_type,
+)
 
 __all__ = [
+    "DRIVER_TYPES",
     "Driver",
     "DriverAction",
     "DriverActionPlan",
@@ -32,4 +39,7 @@ __all__ = [
     "DriverValidationResult",
     "UsbMatrixDriver",
     "VideoMatrixDriver",
+    "create_driver",
+    "create_drivers",
+    "is_mock_driver_type",
 ]
