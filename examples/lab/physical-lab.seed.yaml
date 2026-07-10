@@ -14,6 +14,15 @@
 #   - Patches are optional partial routing changes applied to the current state.
 #   - Advanced features such as EDID profiles, scaler settings, CEC, scene
 #     snapshots, and UI-based config authoring are deferred.
+#
+# This example implements the Workspace Fabric configuration model.
+#
+# Architecture:
+#   docs/architecture.md
+#   docs/architecture/adr/
+#
+# YAML is the serialized configuration representation. Interactive
+# configuration authoring is planned for a later phase.
 
 schema_version: 0.1
 
@@ -21,7 +30,7 @@ metadata:
   name: physical-lab
   description: Initial Workspace Fabric physical lab configuration for UHD-808 and UKM404 smoke testing.
   environment: lab
-  owner: Brad Richins
+  owner: Big Red
 
 controllers:
   video_matrix_uhd808:

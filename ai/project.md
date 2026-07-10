@@ -4,58 +4,52 @@
 
 Workspace Fabric is a software-defined workspace control plane.
 
-It weaves independent workspace resources into a coherent, programmable operating environment.
-
-Users describe intent. Workspace Fabric translates that intent into coordinated actions across hardware devices, software agents, and remote console systems.
+It translates user intent into deterministic operations across hardware,
+software agents, and remote services.
 
 ## Core Idea
 
-Workspace Fabric is not a KVM, matrix controller, remote desktop launcher, or automation engine.
+Workspace Fabric is not a KVM, matrix controller, remote desktop launcher, or
+automation platform. It is the control plane consumed by those systems.
 
-It is a resource orchestration platform.
+## Configuration Model
 
-## Key Principles
+Driver
+→ Controller
+→ Resource
+→ Workspace
+→ Scene
+→ Patch
 
-1. Resources represent user intent.
-2. Intent over implementation.
-3. Hardware enriches the model but never defines it.
-4. Drivers isolate hardware behavior.
-5. Capabilities are negotiated, not assumed.
-6. Resource attachment is explicit.
-7. Transactions over commands.
-8. Automation is a first-class interface.
-9. Manual operation remains possible.
-10. Reference hardware is not the architecture.
+Drivers implement behavior.
+Controllers configure driver instances.
+Resources model physical reality.
+Workspaces describe reusable environments.
+Scenes compose complete configurations.
+Patches perform focused changes to the current state.
 
 ## Current Phase
 
-The project is entering Phase 2: Foundation.
+Phase 3 – Hardware Integration
 
-The goal is to build the core orchestration engine using mock drivers before writing real hardware drivers.
+The goal is to validate the architecture against real hardware.
 
-## Do Not Do These Things
+## AI Guidance
 
-Do not:
+- Preserve abstraction boundaries.
+- Keep drivers hardware-specific.
+- Keep the core hardware-agnostic.
+- Do not collapse workspaces, scenes, and patches into a single concept.
+- Treat YAML as the serialized configuration, not the intended long-term authoring experience.
+- Drivers should expose configuration requirements, ports, endpoint types, and capabilities suitable for future interactive configuration.
 
-- Put vendor-specific protocol code in the core.
-- Assume one global USB host map.
-- Assume all matrices support EDID, scaling, fast switching, or HPD control.
-- Implement real UHD-808 or UKM404 drivers before mock drivers.
-- Build a polished UI before the planner and transaction engine work.
-- Treat PiKVM as required for Workspace Fabric.
-- Implement multi-fabric federation in V0.
-- Implement multi-user RBAC in V0.
-- Implement Windows Display Agent in V0.
+## Phase 3 Priorities
 
-## Implementation Priority
-
-Build in this order:
-
-1. Configuration loader.
-2. Resource graph.
-3. Mock drivers.
-4. Capability validation.
-5. Transaction planner.
-6. Transaction executor.
-7. Minimal CLI/API.
-8. Real hardware drivers.
+1. Driver contract
+2. Physical lab
+3. UHD-808
+4. UKM404
+5. Windows Display Agent
+6. PiKVM
+7. Physical validation
+8. Safety/recovery

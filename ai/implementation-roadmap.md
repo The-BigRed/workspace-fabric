@@ -1,81 +1,44 @@
 # Workspace Fabric Implementation Roadmap for AI
 
-## Phase 2 Foundation
+## Current Phase
 
-The project is now entering Phase 2.
+Phase 3 – Hardware Integration
 
-Do not begin real hardware drivers until foundation milestones are complete.
+The foundation is complete. The current objective is to validate the architecture
+against physical hardware while preserving the Driver → Controller → Resource →
+Workspace → Scene → Patch object model.
 
-## Milestone 1: Config Loader
+## Implementation Order
 
-Implement:
+1. Driver contract hardening.
+2. Validate physical-lab.seed.yaml.
+3. Implement the OREI UHD-808 driver.
+4. Implement the OREI UKM404 driver.
+5. Implement the Windows Display Agent.
+6. Implement PiKVM integration.
+7. Execute end-to-end physical smoke tests.
+8. Implement safety and recovery behavior.
 
-- YAML loading.
-- Schema version check.
-- Basic validation.
-- Clear errors.
+## Architectural Guidance
 
-## Milestone 2: Resource Graph
+- Drivers are reusable code.
+- Controllers are configured driver instances.
+- Resources represent physical devices and endpoints.
+- Workspaces describe reusable operating environments.
+- Scenes compose one or more workspaces.
+- Patches perform partial, non-destructive routing changes.
 
-Implement:
+Preserve this model. Do not invent alternate abstractions.
 
-- Resource objects.
-- Reference resolution.
-- Graph validation.
-- Per-matrix USB host maps.
-- Inspection/debug output.
+## Deferred Until Phase 4
 
-## Milestone 3: Mock Drivers
+- Interactive configuration UI
+- Driver discovery UI
+- Controller onboarding UI
+- Resource editor
+- Workspace editor
+- Scene editor
+- Patch editor
+- Web/Desktop/Tablet clients
 
-Implement:
-
-- Mock video matrix.
-- Mock USB matrix.
-- Optional mock remote console.
-- Capability reporting.
-- Mock state.
-
-## Milestone 4: Capability Validation
-
-Implement:
-
-- Capability status.
-- Policies.
-- Warning/failure behavior.
-
-## Milestone 5: Transaction Planner
-
-Implement:
-
-- Workspace to transaction plan.
-- Video route actions.
-- USB route actions.
-- Dry-run output.
-
-## Milestone 6: Transaction Executor
-
-Implement:
-
-- Execute plans against mock drivers.
-- Record results.
-- Represent partial failure.
-
-## Milestone 7: Minimal Interface
-
-Implement one of:
-
-- CLI first, or
-- REST API first.
-
-CLI is acceptable for early development.
-
-Minimum commands:
-
-```text
-workspace-fabric config validate
-workspace-fabric graph show
-workspace-fabric workspace list
-workspace-fabric apply <workspace>
-workspace-fabric apply <workspace> --dry-run
-workspace-fabric state
-```
+Phase 3 should expose the metadata these future tools will consume.
