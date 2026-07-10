@@ -59,24 +59,24 @@ class WorkspaceFabricRuntime:
 
     @property
     def config(self) -> WorkspaceFabricConfig:
-        self._load()
+        self._load_config_graph()
         assert self._config is not None
         return self._config
 
     @property
     def graph(self) -> ResourceGraph:
-        self._load()
+        self._load_config_graph()
         assert self._graph is not None
         return self._graph
 
     @property
     def drivers(self) -> dict[str, Driver]:
-        self._load()
+        self._load_drivers()
         assert self._drivers is not None
         return self._drivers
 
     def state(self) -> dict[str, Any]:
-        self._load()
+        self._load_drivers()
         assert self._transactions is not None
         return {
             "drivers": {
@@ -95,7 +95,7 @@ class WorkspaceFabricRuntime:
         }
 
     def record_apply_result(self, result: Any) -> None:
-        self._load()
+        self._load_drivers()
         assert self._transactions is not None
 
         transaction = result.dump()["transaction"]
@@ -109,7 +109,17 @@ class WorkspaceFabricRuntime:
             },
         )
 
-    def _load(self) -> None:
+    def _load_config_graph(self) -> None:
+        if self._config is not None and self._graph is not None:
+            return
+
+        config = load_config(self.config_path)
+        graph = build_resource_graph(config)
+
+        self._config = config
+        self._graph = graph
+
+    def _load_drivers(self) -> None:
         if (
             self._config is not None
             and self._graph is not None
@@ -118,17 +128,15 @@ class WorkspaceFabricRuntime:
         ):
             return
 
-        config = load_config(self.config_path)
-        graph = build_resource_graph(config)
-        drivers = create_mock_drivers(config.drivers.values())
+        self._load_config_graph()
+        assert self._config is not None
+        drivers = create_mock_drivers(self._config.drivers.values())
         transactions = _transactions_for_config(
             _load_state_file(self.state_path),
             self.config_path,
         )
         _replay_transactions(drivers, transactions)
 
-        self._config = config
-        self._graph = graph
         self._drivers = drivers
         self._transactions = transactions
 

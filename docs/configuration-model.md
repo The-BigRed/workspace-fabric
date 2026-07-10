@@ -319,6 +319,22 @@ workspaces:
       speakers: work_laptop
 ```
 
+## Scenes and Patches
+
+Scenes and patches are part of the accepted Workspace Fabric object model, but
+they are not serialized in the V0 configuration schema.
+
+V0 keeps physical lab configuration focused on typed resources, explicit
+physical attachments, and workspace routes. Scene and patch YAML sections should
+be added through a future schema version with migration support rather than by
+silently extending `version: 1`.
+
+Any future scene or patch implementation must preserve the existing boundary:
+the resource graph and planner resolve workspace-, scene-, or patch-level
+resource names to controller-local ports before drivers are invoked. Drivers
+must not depend on workspace, scene, patch, or deployment-specific resource
+names to operate.
+
 ## Capability Requests
 
 Workspace definitions may request optional capabilities with policies.
@@ -385,6 +401,9 @@ Secrets management is not part of V0 but should not be precluded.
 ## Example V0 Config
 
 See `examples/local-workspace.yaml`.
+
+For the Phase 3 physical lab V0 schema example, see
+`examples/physical-local.yaml`.
 
 ## Implementation Priority
 

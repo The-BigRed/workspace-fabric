@@ -20,6 +20,41 @@ def test_builds_graph_from_example_configuration() -> None:
     assert graph.resolve_usb_route("speakers", "controller").driver.id == "mock_usb_b"
 
 
+def test_builds_graph_from_physical_lab_configuration() -> None:
+    config = load_config(Path("examples/physical-local.yaml"))
+
+    graph = build_resource_graph(config)
+
+    desktop_primary = graph.resolve_video_route("primary_4k", "desktop_display_1")
+    assert desktop_primary.driver.id == "video_matrix_uhd808"
+    assert desktop_primary.input_port == 1
+    assert desktop_primary.output_port == 1
+
+    work_secondary = graph.resolve_video_route("secondary_2k", "work_laptop_display_1")
+    assert work_secondary.driver.id == "video_matrix_uhd808"
+    assert work_secondary.input_port == 3
+    assert work_secondary.output_port == 2
+
+    assert graph.usb_host_map("ukm404_a") == {
+        1: "desktop",
+        2: "work_laptop",
+    }
+    assert graph.usb_host_map("ukm404_b") == {
+        1: "desktop",
+        2: "work_laptop",
+    }
+
+    webcam_route = graph.resolve_usb_route("webcam", "work_laptop")
+    assert webcam_route.driver.id == "usb_matrix_ukm404_b"
+    assert webcam_route.device_port == 1
+    assert webcam_route.host_port == 2
+
+    pikvm_hid_route = graph.resolve_usb_route("pikvm_keyboard_mouse_hid", "desktop")
+    assert pikvm_hid_route.driver.id == "usb_matrix_ukm404_b"
+    assert pikvm_hid_route.device_port == 4
+    assert pikvm_hid_route.host_port == 1
+
+
 def test_per_matrix_usb_host_maps_are_represented_independently() -> None:
     graph = build_resource_graph(load_config(Path("examples/local-workspace.yaml")))
 

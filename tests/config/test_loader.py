@@ -27,6 +27,33 @@ def test_loads_example_configuration() -> None:
     assert set(config.workspaces) == {"work", "desktop", "hybrid_meeting"}
 
 
+def test_loads_physical_lab_configuration() -> None:
+    config = load_config(Path("examples/physical-local.yaml"))
+
+    assert config.version == 1
+    assert set(config.fabrics) == {"physical_lab"}
+    assert set(config.drivers) == {
+        "video_matrix_uhd808",
+        "usb_matrix_ukm404_a",
+        "usb_matrix_ukm404_b",
+    }
+    assert config.drivers["video_matrix_uhd808"].type == "orei_uhd808"
+    assert config.drivers["usb_matrix_ukm404_a"].type == "orei_ukm404"
+    assert set(config.displays) == {"primary_4k", "secondary_2k", "pikvm_capture"}
+    assert set(config.usb_matrices) == {"ukm404_a", "ukm404_b"}
+    assert set(config.usb_devices) == {
+        "primary_keyboard",
+        "primary_mouse",
+        "secondary_keyboard",
+        "secondary_mouse",
+        "webcam",
+        "drop_mic",
+        "fingerprint_reader",
+        "pikvm_keyboard_mouse_hid",
+    }
+    assert {"desktop", "work", "hybrid_meeting"} <= set(config.workspaces)
+
+
 def test_normalizes_workspace_video_shorthand_and_capability_requests() -> None:
     config = load_config(Path("examples/local-workspace.yaml"))
 

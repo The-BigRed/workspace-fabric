@@ -42,10 +42,34 @@ The following should not be part of Milestone 3.4:
 
 - Interactive configuration UI.
 - Config generation wizard.
+- Scene and patch YAML schema expansion.
 - Scene snapshot button.
 - Automatic topology discovery.
 - Driver-based hardware autodetection.
 - Persistent configuration editing API beyond what is already required.
+
+## Deferred Configuration-Model Evolution
+
+Milestone 3.4 should remain scoped to a static physical-lab configuration using
+the currently implemented V0 schema. The richer Controller -> Resource ->
+Workspace -> Scene -> Patch object model remains the target architecture, but
+the serialized YAML schema for scenes and patches should be introduced as a
+versioned Phase 4 configuration-model evolution.
+
+The Phase 4 schema work should include:
+
+- Explicit typed models for controllers, grouped resources, hardware mappings,
+  scenes, and patches.
+- Loader validation for scene composition and patch scope.
+- Planner support for activating scenes and applying patches without changing
+  unrelated state.
+- Migration from `version: 1` V0 files to the next schema version.
+- Backward compatibility so existing V0 configurations such as
+  `examples/local-workspace.yaml` and `examples/physical-local.yaml` continue
+  to load or can be migrated deterministically.
+- Preservation of the driver boundary: resource names may appear in plans and
+  history as explanatory context, but drivers must continue to receive
+  controller-local ports before invocation.
 
 ## Dependency Notes
 

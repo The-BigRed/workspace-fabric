@@ -53,6 +53,23 @@ def test_config_validate_graph_show_and_workspace_list_commands(tmp_path: Path) 
     assert list_error == ""
 
 
+def test_config_validate_accepts_physical_lab_configuration(tmp_path: Path) -> None:
+    cli = WorkspaceFabricCLI()
+    state_file = tmp_path / "state.json"
+
+    validate_code, validate_output, validate_error = run_cli(
+        cli,
+        ["config", "validate", "--config", "examples/physical-local.yaml"],
+        state_file=state_file,
+    )
+
+    assert validate_code == 0
+    assert validate_output["config"]["valid"] is True
+    assert validate_output["config"]["path"] == "examples\\physical-local.yaml"
+    assert validate_output["config"]["version"] == 1
+    assert validate_error == ""
+
+
 def test_apply_dry_run_returns_plan_without_updating_state(tmp_path: Path) -> None:
     cli = WorkspaceFabricCLI()
     state_file = tmp_path / "state.json"
