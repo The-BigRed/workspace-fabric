@@ -289,7 +289,11 @@ def build_parser() -> argparse.ArgumentParser:
     apply_parser = subcommands.add_parser("apply", help="Apply a workspace.")
     _add_runtime_arguments(apply_parser)
     apply_parser.add_argument("workspace_id", metavar="workspace")
-    apply_parser.add_argument("--dry-run", action="store_true", help="Preview without applying.")
+    apply_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview without applying; recommended before physical hardware apply.",
+    )
 
     state_parser = subcommands.add_parser("state", help="Show observed driver state.")
     _add_runtime_arguments(state_parser)

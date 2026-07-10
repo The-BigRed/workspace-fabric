@@ -35,3 +35,4 @@ Milestone 3.6: Safety and Recovery
 - Add timeout handling
 - Add connection failure handling
 - Add rollback/retry notes where practical
+- Procedure: docs/hardware/safety-and-recovery.md

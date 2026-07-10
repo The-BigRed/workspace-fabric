@@ -5,7 +5,9 @@ from io import StringIO
 from pathlib import Path
 from typing import Any
 
-from workspace_fabric.cli import WorkspaceFabricCLI
+import pytest
+
+from workspace_fabric.cli import WorkspaceFabricCLI, build_parser
 
 
 def run_cli(
@@ -25,6 +27,19 @@ def run_cli(
 
     output = json.loads(stdout.getvalue()) if stdout.getvalue() else {}
     return exit_code, output, stderr.getvalue()
+
+
+def test_apply_help_recommends_dry_run_before_physical_hardware_apply(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        build_parser().parse_args(["apply", "--help"])
+
+    captured = capsys.readouterr()
+
+    assert exc.value.code == 0
+    assert "recommended before physical" in captured.out
+    assert "hardware apply" in captured.out
 
 
 def test_config_validate_graph_show_and_workspace_list_commands(tmp_path: Path) -> None:

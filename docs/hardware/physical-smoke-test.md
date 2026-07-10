@@ -37,6 +37,11 @@ workspace-fabric apply --config examples\physical-local.yaml work --dry-run
 workspace-fabric apply --config examples\physical-local.yaml hybrid_meeting --dry-run
 ```
 
+Use the safety and recovery procedure in
+`docs/hardware/safety-and-recovery.md` before running a non-dry-run physical
+apply. The smoke test is operator-supervised; if dry-run output does not match
+the intended driver instances and controller-local ports, stop before applying.
+
 Apply the smoke sequence:
 
 ```powershell
@@ -84,3 +89,10 @@ After each apply, confirm:
 
 If a driver reports `unknown` or `last_known`, treat the physical route as not
 fully verified even if the device appears to switch correctly.
+
+## Failure Handling
+
+If an apply returns `failed_apply` or `partial_success`, save the transaction
+output and follow `docs/hardware/safety-and-recovery.md`. Do not assume automatic
+rollback. Recover by dry-running and applying an explicit known-good workspace
+after the timeout, connection failure, or state-query issue is understood.
