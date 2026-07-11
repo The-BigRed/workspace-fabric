@@ -21,13 +21,25 @@ for stable public interfaces and the first complete product release.
 Decouple drivers from the Workspace Fabric core and establish a modular,
 independently versioned plugin architecture.
 
+## Current Milestone Progress
+
+| Milestone | Status | Completion |
+|-----------|--------|-----------|
+| 4.1 – Architecture and Audit | ✅ Complete | 2026-07-11 |
+| 4.2 – Monorepo Package Structure | ⧗ Ready | Next |
+| 4.3 – Versioned Driver API | ⧗ Planned | Q3 2026 |
+| 4.4 – Installed-Driver Discovery | ⧗ Planned | Q3 2026 |
+| 4.5 – Driver Metadata and Catalog | ⧗ Planned | Q3 2026 |
+| 4.6 – Driver Migration | ⧗ Planned | Q3 2026 |
+| 4.7 – Lifecycle and Compatibility | ⧗ Planned | Q3 2026 |
+
 Current work includes:
 
-- Driver package architecture
-- Versioned Driver API
-- Plugin discovery
-- Driver metadata catalog
-- Driver lifecycle management
+- ✅ Architecture audit and packaging analysis
+- ⧗ Monorepo package extraction (4.2)
+- ⧗ Versioned Driver API (4.3)
+- ⧗ Plugin discovery implementation (4.4)
+- ⧗ Driver metadata catalog (4.5)
 
 ---
 

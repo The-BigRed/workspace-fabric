@@ -27,20 +27,50 @@ them.
 
 ## Milestone 4.1 – Architecture and Audit
 
+**Status:** ✅ **COMPLETE** (2026-07-11)
+
+**Documentation:**
+- [Detailed Audit Report](../../ai/implementation/milestone-4.1-audit.md)
+- [Phase 4 Implementation Checklist](../../ai/implementation/phase-4-implementation-checklist.md)
+
 ### Deliverables
 
-- Accept ADR-0006.
-- Audit current driver imports, registries, factories, and configuration
-  validation.
-- Identify every vendor-specific dependency in core code.
-- Document current package and test coupling.
-- Define migration order and temporary compatibility adapters.
+- ✅ ADR-0006 accepted and documented.
+- ✅ Audit of current driver imports, registries, factories, and configuration
+  validation complete.
+- ✅ All vendor-specific dependencies in core code identified with locations.
+- ✅ Current package and test coupling documented.
+- ✅ Migration order and temporary compatibility adapters defined.
 
 ### Acceptance Criteria
 
-- The current implementation is understood before restructuring.
-- No speculative rewrite is approved without evidence from the audit.
-- The package and dependency targets are explicit.
+- ✅ The current implementation is understood before restructuring.
+- ✅ No speculative rewrite is approved without evidence from the audit.
+- ✅ The package and dependency targets are explicit.
+
+### Key Findings
+
+**Hard-Coded Registry:**
+- Location: `src/workspace_fabric/drivers/factory.py`
+- Directly imports vendor drivers (OREI UHD-808, OREI UKM-404)
+- Cannot be independently installed, upgraded, or removed
+
+**Vendor-Specific Dependencies in Core:**
+- 3 direct vendor imports in factory
+- Re-exports in `drivers/__init__.py`
+- Mock detection hard-coded in `cli/app.py`
+
+**Migration Strategy:**
+1. **4.2** – Monorepo packages (core, driver-api, driver-mock, driver-orei-*)
+2. **4.3** – Versioned Driver API (extract interfaces, add compatibility version)
+3. **4.4** – Entry-point discovery (replace factory registry)
+4. **4.5** – Driver metadata catalog (plugin descriptor)
+
+**Compatibility Guarantees:**
+- No breaking changes to YAML configuration format
+- Driver type identifiers remain stable
+- Physical behavior preserved from Phase 3
+- Temporary adapters designed for smooth transition
 
 ## Milestone 4.2 – Monorepo Package Structure
 
