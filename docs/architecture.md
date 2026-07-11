@@ -7,181 +7,209 @@ This document describes the architectural structure of Workspace Fabric.
 **Workspace Fabric is a hardware-agnostic control plane for dynamically
 reconfigurable workspaces.**
 
-It weaves independent workspace resources into a coherent, programmable
-operating environment.
+It translates user intent into coordinated actions across independently
+packaged drivers, configured controllers, physical devices, software agents,
+and future service integrations.
 
-Rather than describing one hardware platform, this document describes the
-logical architecture responsible for translating user intent into coordinated
-actions across physical devices, software agents, and future workspace
-resources.
-
-Implementation details, hardware behavior, and architectural rationale are
-documented elsewhere. Accepted rationale for the configuration model is
-recorded under `docs/architecture/adr/`.
+Accepted architectural rationale is recorded in `docs/architecture/adr/`.
 
 ## Architectural Goals
 
 Workspace Fabric is designed to:
 
-- Abstract hardware behind logical concepts.
+- Abstract vendor behavior behind stable driver contracts.
 - Support physical and virtual resources equally.
 - Remain API-first.
 - Be deterministic and explainable.
-- Be easy to integrate with external automation and AI systems.
-- Allow new hardware to be added through modular drivers.
-- Model user intent without hiding physical topology.
-- Treat controllers, resources, capabilities, transactions, and configuration
-  as first-class architectural objects.
+- Preserve truthful physical topology.
+- Treat controllers, resources, capabilities, transactions, configuration, and
+  drivers as first-class concepts.
 - Support optional capabilities without reducing the platform to the lowest
   common denominator.
 - Execute changes as validated transactions.
-- Scale naturally from a single personal workspace to multiple independent
-  fabrics.
 - Preserve an open, inspectable configuration representation.
-- Support an interactive configuration experience driven by driver metadata.
+- Support interactive configuration driven by installed driver metadata.
+- Allow drivers to be installed, upgraded, rolled back, removed, and versioned
+  independently from the core application.
+- Preserve backward compatibility whenever practical.
 
-Workspace Fabric is **not** an automation engine. It provides the deterministic
-control plane that automation systems consume.
+Workspace Fabric is not an automation engine. Automation systems consume its
+public API.
 
 ## Layered Architecture
 
-Workspace Fabric follows a layered architecture that separates user intent,
-orchestration, hardware abstraction, and physical resources.
-
 ```text
-                       Clients
-           CLI • API • Web UI • Automation
-                          │
-                          ▼
-               +----------------------+
-               |   Workspace Fabric   |
-               |    Control Plane     |
-               +----------------------+
-                          │
-          +---------------+---------------+
-          │                               │
-          ▼                               ▼
-     Configuration                 Resource Graph
-          │                               │
-          └───────────────┬───────────────┘
-                          ▼
-                 Transaction Planner
-                Transaction Executor
-            Desired & Observed State
-                          │
-                          ▼
-                 Controller Instances
-                          │
-                          ▼
-                   Driver Abstraction
-                          │
-        +-----------------+-----------------+
-        │                 │                 │
-        ▼                 ▼                 ▼
-   Video Drivers     USB Drivers     Other Drivers
-        │                 │                 │
-        +-----------------+-----------------+
-                          │
-                          ▼
-                 Physical Infrastructure
+                           Clients
+                CLI • API • Web UI • Automation
+                              │
+                              ▼
+                  +------------------------+
+                  | Workspace Fabric Core  |
+                  +------------------------+
+                              │
+          +-------------------+-------------------+
+          │                                       │
+          ▼                                       ▼
+     Configuration                          Resource Graph
+          │                                       │
+          +-------------------+-------------------+
+                              ▼
+                    Transaction Planner
+                    Transaction Executor
+                    Desired/Observed State
+                              │
+                              ▼
+                    Controller Instances
+                              │
+                              ▼
+                    Driver API Contract
+                              │
+                              ▼
+                 Installed Driver Plugins
+                              │
+         +--------------------+--------------------+
+         │                    │                    │
+         ▼                    ▼                    ▼
+    Video Drivers        USB Drivers        Other Drivers
+         │                    │                    │
+         +--------------------+--------------------+
+                              ▼
+                    Physical/Virtual Systems
 ```
 
-The architecture intentionally flows in one direction.
+The architecture flows in one direction. Clients express intent. The core
+validates and plans. Controllers bind configuration to installed driver types.
+Drivers translate assigned actions into native operations. Drivers do not make
+global policy decisions or coordinate directly with one another.
 
-Clients express intent. The control plane validates that intent and produces a
-transaction plan. Controller instances bind configuration to driver
-implementations. Drivers translate assigned actions into vendor-specific
-operations. Physical hardware or services perform the requested actions.
+## Package Architecture
 
-Drivers do not coordinate with one another and do not make global policy
-decisions.
+Workspace Fabric separates runtime responsibilities into independently
+versioned packages.
+
+### Core Application
+
+The core owns:
+
+- Configuration loading and validation
+- Resource graph construction
+- Desired and observed state coordination
+- Capability policy evaluation
+- Transaction planning and execution
+- Persistence and transaction history
+- CLI, API, and user interfaces
+- Installed-driver discovery and compatibility validation
+
+The core must not contain or directly import vendor-specific protocol behavior.
+
+### Driver API
+
+The Driver API is a shared package containing portable contracts used by both
+the core and driver implementations.
+
+It owns:
+
+- Driver interfaces
+- Action and result models
+- Capability representations
+- State and health models
+- Structured issue categories
+- Plugin metadata contract
+- Driver API compatibility version
+
+The Driver API must remain free of orchestration policy and vendor-specific
+implementation details.
+
+### Driver Implementations
+
+A driver implementation is an independently installable package for a hardware
+family, platform, protocol, software agent, or service.
+
+A driver package owns:
+
+- Native communication behavior
+- Driver-specific validation
+- Static and discovered capability metadata
+- Port and endpoint metadata
+- Driver-specific state parsing
+- Package version and compatibility declaration
+- Entry-point registration
+
+Installing a driver makes it available to the core. Removing an unused driver
+must not affect unrelated operation.
+
+### Driver Packs
+
+A driver pack is an optional convenience metapackage depending on several
+individual driver packages. Driver packs do not replace individual package
+versioning, discovery, rollback, or removal.
+
+## Driver Discovery
+
+Installed drivers are discovered through standard Python package entry points.
+The entry-point group is defined by ADR-0006.
+
+The core builds a driver catalog from compatible plugins and records clear
+diagnostics for plugins that cannot be loaded or are incompatible.
+
+The core must not use production folder scanning as the primary plugin
+mechanism. Source-tree placement is a repository concern; package entry points
+are the runtime contract.
 
 ## Architectural Layers
 
-### Layer 1 – Physical Infrastructure
+### Layer 1 – Physical and Virtual Infrastructure
 
 Examples include:
 
-- HDMI matrices
-- USB matrices
+- HDMI and USB matrices
 - Audio routing hardware
-- KVMs
-- Servers
-- Displays
-- Keyboards
-- Mice
-- Cameras
-- Microphones
-- Speakers
-- BMCs such as iDRAC, iLO, XClarity, and Redfish implementations
-- Virtualization platforms
+- Displays and hosts
+- Keyboards, mice, cameras, and microphones
+- Remote console systems
+- BMCs and hypervisors
 - Operating-system agents
+- Cloud or local services
 
-These are the real devices and services being managed.
+### Layer 2 – Driver Implementations
 
-### Layer 2 – Driver Abstraction
+Drivers translate portable actions into native operations and report health,
+capabilities, and observed state.
 
-Drivers implement hardware- or service-specific behavior.
+Drivers must not:
 
-Responsibilities include:
+- Interpret global workspace intent
+- Coordinate directly with other drivers
+- Modify unrelated resources
+- Own transaction policy
+- Pretend unsupported or unknown behavior succeeded
 
-- Declaring configuration requirements.
-- Translating native commands and responses.
-- Reporting capabilities.
-- Reporting observed state.
-- Describing known ports and endpoint types.
-- Validating driver-specific actions.
-- Applying assigned actions.
-- Returning structured errors, warnings, and unsupported-state results.
-- Hiding vendor-specific protocol details from the core.
+### Layer 3 – Driver API
 
-A driver is code. It is not a configured physical device.
+The Driver API defines the stable interchange between the core and installed
+drivers. Compatibility is explicit and independently versioned.
 
-The core system never communicates directly with hardware.
+### Layer 4 – Controller Instances
 
-### Layer 3 – Controller Instances
-
-A controller is a configured instance of a driver.
+A controller is a configured instance of an installed driver.
 
 A controller binds:
 
-- A stable instance identifier.
-- A driver type.
-- Connectivity and authentication settings.
-- Instance-specific capability results.
-- Discovered or declared hardware identity.
-- Ports, endpoints, and observed state associated with that device.
+- Stable instance identifier
+- Driver type identifier
+- Connectivity and authentication settings
+- Instance-specific capabilities
+- Identity and port metadata
+- Observed state
 
-Multiple controllers may use the same driver. For example, two OREI UKM404
-devices use the same driver implementation but have separate addresses,
-identity, state, and physical connections.
+Multiple controllers may use the same driver package.
 
-Controllers are the boundary between reusable driver code and a specific
-reachable device, agent, or service.
+### Layer 5 – Control Plane
 
-### Layer 4 – Control Plane
+The control plane owns orchestration, policy, planning, execution, persistence,
+and explanation. It coordinates controllers only through the Driver API.
 
-The control plane contains the orchestration engine.
-
-Its responsibilities include:
-
-- Loading and validating configuration.
-- Maintaining the resource graph.
-- Maintaining desired and observed state.
-- Validating workspace, scene, and patch requests.
-- Negotiating capabilities.
-- Planning transactions.
-- Coordinating controller actions.
-- Recording transaction history.
-- Reconciling state where supported.
-- Explaining execution decisions.
-
-The control plane owns policy and coordination. Drivers own implementation of
-assigned operations.
-
-### Layer 5 – Configuration and Resource Model
-
-Workspace Fabric uses the following conceptual hierarchy:
+### Layer 6 – Configuration and Resource Model
 
 ```text
 Driver
@@ -197,271 +225,97 @@ Scene
 Patch
 ```
 
-The arrows describe how later concepts build on earlier ones. They are not
-necessarily ownership relationships in every serialized configuration.
+A driver is implementation code. A controller is a configured reachable
+instance. Resources are the objects users and planners reason about. Workspaces,
+scenes, and patches express reusable intent at different scopes.
 
-#### Drivers
+### Layer 7 – Interfaces
 
-Drivers are reusable code modules that implement communication and behavior for
-a hardware family, software agent, or service.
+All interfaces use the same control plane:
 
-#### Controllers
-
-Controllers configure individual driver instances and represent reachable
-devices or services.
-
-#### Resources
-
-Resources represent the things users and the planner reason about.
-
-Examples include:
-
-- Hosts
-- Video sources
-- Displays and capture sinks
-- USB host endpoints
-- Keyboards
-- Mice
-- Cameras
-- Microphones
-- Remote consoles
-- Logical or composite endpoints
-
-Resources may represent whole devices or individual endpoints. Physical
-connections associate resources with controller ports and describe the actual
-installed topology.
-
-#### Workspaces
-
-A workspace describes a reusable operating environment.
-
-It identifies the resources and routes needed for one coherent working context,
-such as:
-
-- A desktop on the primary monitor with the primary keyboard and mouse.
-- A work laptop on both monitors with the webcam and microphone.
-- A PiKVM capture path for a selected video source.
-
-A workspace may use only a subset of available resources. It does not need to
-describe the entire fabric.
-
-#### Scenes
-
-A scene composes one or more workspaces into one complete requested
-configuration.
-
-A personal installation may commonly use scenes containing a single workspace.
-Larger environments may use scenes to coordinate multiple simultaneous
-workspaces, operators, rooms, capture paths, or presentation roles.
-
-Consumers may activate a scene without needing to know whether it contains one
-workspace or many.
-
-#### Patches
-
-A patch performs a focused partial change against the current fabric state.
-
-Examples include:
-
-- Moving only a keyboard and mouse.
-- Adding a Stream Deck to whichever workspace is currently active.
-- Moving a webcam without changing video routing.
-- Adding a diagnostic or PiKVM capture route.
-- Temporarily mirroring an output.
-
-Patches leave unrelated state unchanged. They are not incomplete workspaces or
-small scenes; their partial-update semantics are intentional.
-
-### Layer 6 – Interfaces
-
-Workspace Fabric is API-first.
-
-Interfaces may include:
-
-- REST API
 - CLI
+- REST API
 - Web UI
-- Desktop application
-- Tablet application
-- Future SDKs
+- Desktop client
+- Tablet interface
+- SDKs
 
-Every interface uses the same control plane and domain model.
+### Layer 8 – Integrations
 
-### Layer 7 – Integrations
-
-External systems consume Workspace Fabric through stable APIs.
-
-Examples include:
-
-- Home Assistant
-- Node-RED
-- Stream Deck
-- Voice assistants
-- Monitoring systems
-- AI or agent platforms
-
-These systems may decide when a change should occur. Workspace Fabric validates,
-plans, and executes the requested workspace, scene, or patch.
+External systems consume stable APIs. Home Assistant, Node-RED, Stream Deck,
+voice assistants, monitoring systems, and AI platforms remain integrations, not
+core orchestration logic.
 
 ## Physical Topology and Resource Attachment
 
-Workspace Fabric must preserve a truthful model of physical connectivity.
+Workspace Fabric preserves explicit physical connectivity. Drivers describe
+ports and capabilities. Controllers represent installed instances. Resources
+map to controller endpoints. The planner resolves logical intent to device-local
+actions before invoking a driver.
 
-Drivers and controllers expose or declare ports. Resources are mapped to those
-ports to represent what is physically connected.
+The system must not assume symmetrical ports, shared host maps, or universally
+queryable state.
 
-For example:
+## Driver Metadata and Configuration Authoring
 
-```text
-Desktop Display Output 1
-          │
-          ▼
-UHD-808 Input 1
-          │
-          ▼
-UHD-808 Output 1
-          │
-          ▼
-Primary Display
-```
+The preferred configuration experience is interactive and driven by the
+installed driver catalog.
 
-The core reasons about logical resources, but it must not erase the underlying
-topology needed for validation, planning, diagnostics, and explainability.
+A future authoring interface should:
 
-Resource attachment is explicit. The system must not assume that all matrices
-have symmetrical ports, that multiple devices share identical host maps, or
-that all drivers can query their current state.
-
-## Configuration Authoring
-
-The preferred Workspace Fabric configuration experience is interactive.
-
-The intended workflow is:
-
-1. Select a driver representing the device or service being added.
-2. Enter the connectivity and authentication details required by that driver.
+1. List compatible installed drivers.
+2. Read driver-declared configuration requirements.
 3. Create a controller instance.
 4. Validate connectivity.
-5. Query identity, ports, capabilities, and observed state where supported.
-6. Create resources and map them to controller ports according to physical
-   reality.
-7. Compose resources into workspaces.
-8. Compose one or more workspaces into scenes where useful.
-9. Create patches for reusable partial changes.
-10. Validate and serialize the resulting configuration.
+5. Query identity, ports, capabilities, and state where supported.
+6. Map resources to declared or discovered endpoints.
+7. Compose workspaces, scenes, and patches.
+8. Validate and serialize the result.
 
-Drivers should expose machine-readable metadata sufficient for a generic
-configuration application to render appropriate forms and endpoints without
-embedding device-specific UI logic.
-
-Relevant metadata may include:
-
-- Required and optional connection fields.
-- Supported transports.
-- Authentication requirements.
-- Port groups and port counts.
-- Endpoint direction.
-- Media or resource types accepted by each port.
-- Optional capabilities.
-- Whether identity, topology, routes, or state can be queried.
-
-Hardware discovery is opportunistic. When a device cannot report a value, the
-configuration may supply it explicitly and the observed result must remain
-`unknown` rather than being fabricated.
+The UI must not embed vendor-specific configuration logic when driver metadata
+can describe it generically.
 
 ## YAML as Serialization
 
-YAML is the initial configuration format and remains an exposed, editable source
-of truth.
+YAML remains an exposed and editable source of truth. It provides transparency,
+version control, portability, and recovery. It is not the intended final primary
+authoring experience.
 
-This is valuable because it provides:
-
-- Transparency.
-- Version control.
-- Portability.
-- Human inspection.
-- Advanced customization.
-- A recovery path when a UI does not yet support a feature.
-
-However, manually maintaining a large, internally congruent topology is
-error-prone. YAML is therefore not intended to be the final primary
-configuration-authoring experience.
-
-The object model must drive the YAML schema. The project must not constrain the
-architecture merely to make manual YAML editing easier.
-
-## Topology vs. Operational State
-
-Workspace Fabric separates relatively static configuration from dynamic
-behavior.
-
-Static or slowly changing information includes:
-
-- Controllers
-- Physical devices
-- Ports and endpoints
-- Resource definitions
-- Physical connections
-- Declared capabilities
-
-Dynamic information includes:
-
-- Active routes
-- Desired state
-- Observed state
-- Active workspaces
-- Applied scenes
-- Applied patches
-- Transaction history
-- Failures and warnings
-
-This separation allows physical wiring to remain largely unchanged while
-operational behavior changes continuously.
+Configuration references stable driver type identifiers, not Python module
+paths or package names. Packaging changes should not force deployment-specific
+controller identifiers to change.
 
 ## Desired and Observed State
 
-Workspace Fabric distinguishes requested state from verified state.
+- **Desired state** records what the core intends to be true.
+- **Observed state** records what drivers can verify.
+- **Unknown state** is legitimate when verification is unavailable.
 
-- **Desired state** records what the control plane intends to be true.
-- **Observed state** records what controllers and drivers can verify.
-- **Unknown state** is a legitimate result when hardware cannot report a value.
+The core must not claim verification merely because a command was sent.
 
-The system must not claim verification merely because a command was accepted or
-no error was returned.
+## Versioning and Compatibility
+
+The core, Driver API, and driver implementations use independent semantic
+versioning.
+
+- Compatible driver releases do not change the core version.
+- Backward-compatible core or Driver API extensions use minor releases.
+- Breaking public or Driver API changes use major releases.
+- Compatibility failures are reported before controller use.
 
 ## Guiding Principles
 
 1. Intent over implementation.
-2. API-first, with all interfaces using the same control plane.
+2. API-first.
 3. Driver isolation.
 4. Explicit controller instances.
-5. Truthful physical topology.
+5. Truthful topology.
 6. Deterministic behavior.
 7. Explainable decisions.
 8. Modular expansion.
-9. Automation-friendly without embedding automation.
-10. The control plane owns policy; drivers own implementation.
-11. YAML remains open and editable, but need not be manually authored.
-12. Architectural changes are captured intentionally in ADRs.
-
-## Future Directions
-
-Future enhancements may include:
-
-- Interactive configuration authoring.
-- Driver-assisted discovery and onboarding.
-- Physical topology visualization.
-- Multiple independent fabrics.
-- Multi-fabric federation.
-- Local Console Virtualization.
-- Additional operating-system agents.
-- Multi-user orchestration layers.
-- Distributed control planes.
-- High-availability controllers.
-- Additional transport types.
-- Rich desktop and tablet interfaces.
-- Additional hardware and service drivers.
-- Expanded patch operations and conflict resolution.
-
-These capabilities should extend the architecture without requiring replacement
-of the core domain model.
+9. Independent driver lifecycle.
+10. The core owns policy; drivers own assigned implementation.
+11. YAML remains open and editable.
+12. Architectural changes are captured in ADRs.
+13. Extend before replacing.
+14. Preserve backward compatibility whenever practical.

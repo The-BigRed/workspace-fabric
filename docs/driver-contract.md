@@ -2,97 +2,203 @@
 
 ## Purpose
 
-This document defines the responsibilities and boundaries of Workspace Fabric drivers.
+This document defines the behavioral and packaging contract between Workspace
+Fabric, its shared Driver API, and independently distributed driver
+implementations.
 
-Drivers isolate vendor-specific behavior from the core orchestration engine. The core should never directly speak RS-232, TCP control protocols, Redfish, PiKVM APIs, Windows APIs, or any other vendor-specific interface.
+Drivers isolate vendor-, protocol-, platform-, and service-specific behavior
+from the core orchestration engine. The core never directly speaks Telnet,
+RS-232, Redfish, PiKVM APIs, Windows APIs, or other native interfaces.
 
-## Driver Role
+## Package Roles
 
-A driver is a software module that connects Workspace Fabric to a hardware device, software agent, platform, or service.
+### Core Application
+
+The core owns configuration, topology, policy, planning, execution,
+persistence, and interfaces.
+
+### Driver API Package
+
+The Driver API owns portable contracts shared by the core and driver packages:
+
+- Base driver interfaces
+- Driver actions
+- Driver results
+- Health and state models
+- Capabilities
+- Structured issues and errors
+- Plugin descriptor
+- Compatibility version
+
+The Driver API must not depend on the core application or vendor drivers.
+
+### Driver Package
+
+A driver package implements one hardware family, software agent, platform,
+protocol, or service integration. It is independently installed and versioned.
 
 Examples:
 
-- OREI UHD-808 video matrix driver.
-- OREI UKM404 USB matrix driver.
-- PiKVM driver.
-- Windows Display Agent driver.
-- iDRAC driver.
-- Proxmox driver.
-- Enterprise IP-KVM driver.
+- `workspace-fabric-driver-orei-uhd808`
+- `workspace-fabric-driver-orei-ukm404`
+- `workspace-fabric-driver-mock`
 
-## Core Responsibilities
+A package may expose more than one closely related driver type when that design
+is intentional and documented, but stable driver type identifiers remain the
+runtime unit selected by controller configuration.
 
-The Workspace Fabric core is responsible for:
+## Dependency Boundary
 
-- Loading configuration.
-- Maintaining the resource graph.
-- Maintaining desired and observed state.
-- Validating workspace requests.
-- Planning transactions.
-- Coordinating driver actions.
-- Persisting state and transaction history.
-- Exposing APIs and user interfaces.
+Allowed:
+
+```text
+core ───────────────┐
+                    ├──> driver-api
+implementation ─────┘
+```
+
+Forbidden:
+
+- Core imports of vendor driver packages
+- Driver imports of core orchestration modules
+- Driver-to-driver coordination
+- Vendor-specific types in core configuration or transaction models
+
+## Plugin Discovery
+
+Driver packages register through the entry-point group:
+
+```text
+workspace_fabric.drivers
+```
+
+Example:
+
+```toml
+[project.entry-points."workspace_fabric.drivers"]
+orei_uhd808 = "workspace_fabric_driver_orei_uhd808.plugin:get_plugin"
+```
+
+The entry point returns a plugin descriptor or a callable producing one.
+
+The core discovers installed packages through standard Python package metadata.
+It must not rely on arbitrary filesystem scanning as the production plugin
+contract.
+
+## Plugin Descriptor
+
+Each plugin must expose machine-readable metadata sufficient for compatibility
+validation and future configuration authoring.
+
+Conceptually:
+
+```python
+@dataclass(frozen=True)
+class DriverPlugin:
+    driver_type: str
+    display_name: str
+    driver_version: str
+    supported_driver_api: str
+    factory: DriverFactory
+    configuration_schema: Mapping[str, object]
+    port_metadata: Mapping[str, object]
+    capability_metadata: Mapping[str, object]
+```
+
+Exact Python types may evolve, but the descriptor must include:
+
+- Stable driver type identifier
+- Human-readable display name
+- Driver implementation version
+- Supported Driver API version or range
+- Factory for configured instances
+- Configuration requirements
+- Port or endpoint metadata where known
+- Capability metadata where known
+
+Optional metadata may include:
+
+- Vendor and model family
+- Documentation links or identifiers
+- Supported transports
+- Authentication requirements
+- Identity discovery
+- Connectivity tests
+- Firmware compatibility notes
+- Deprecation information
+
+## Stable Driver Type Identifiers
+
+Configuration refers to a stable driver type, for example:
+
+```yaml
+controllers:
+  video_matrix_uhd808:
+    driver: orei_uhd808
+```
+
+The identifier must not depend on installation path, Python module name, or
+package repository location. Package restructuring must preserve stable driver
+type identifiers whenever practical.
+
+## Driver API Compatibility
+
+The Driver API has an explicit compatibility version. Drivers declare the
+versions they support. The core validates compatibility before creating a
+controller.
+
+An incompatible plugin must produce a structured diagnostic identifying:
+
+- Driver type
+- Driver package version
+- Declared Driver API compatibility
+- Driver API version supported by the core
+
+The core must not attempt best-effort execution through an incompatible
+contract.
+
+## Driver Lifecycle Behavior
+
+- Installing a compatible driver makes it discoverable.
+- An installed but unused driver must have no side effects.
+- Removing an unused driver must not affect the core.
+- A configured but missing driver must fail configuration validation clearly.
+- Compatible driver upgrades and rollbacks must not require a core release.
+- One plugin failure should not prevent unrelated compatible plugins from
+  loading where practical.
+- Driver installation and removal must not silently rewrite user configuration.
 
 ## Driver Responsibilities
 
 A driver is responsible for:
 
-- Connecting to its target device, service, or agent.
-- Reporting capabilities.
-- Reporting observed state where possible.
-- Validating driver-specific actions.
-- Translating generic actions into native commands.
-- Applying assigned actions.
-- Returning structured results.
-- Returning structured errors.
+- Connecting to its target
+- Reporting health
+- Reporting capabilities
+- Reporting observed state where possible
+- Validating driver-specific actions
+- Planning driver-specific operations
+- Translating portable actions into native commands
+- Applying assigned actions
+- Returning structured results and diagnostics
+- Preserving raw native responses when useful for troubleshooting
 
 ## Driver Non-Responsibilities
 
-A driver should not:
+A driver must not:
 
-- Make global policy decisions.
-- Coordinate directly with other drivers.
-- Modify unrelated resources.
-- Interpret high-level workspace intent.
-- Assume global topology.
-- Own the transaction engine.
-- Hide unsupported features by pretending they succeeded.
+- Make global policy decisions
+- Coordinate directly with other drivers
+- Modify unrelated resources
+- Interpret high-level workspace intent
+- Assume global topology
+- Own transaction execution
+- Depend on deployment-specific logical resource names to operate
+- Hide unsupported or unknown features by pretending they succeeded
 
-## Driver Instances
+## Common Runtime Interface
 
-Workspace Fabric must support multiple instances of the same driver type.
-
-Example:
-
-```yaml
-drivers:
-  uhd808_main:
-    type: orei_uhd808
-    connection:
-      host: 192.0.2.10
-
-  ukm404_a:
-    type: orei_ukm404
-    connection:
-      host: 192.0.2.20
-
-  ukm404_b:
-    type: orei_ukm404
-    connection:
-      host: 192.0.2.21
-```
-
-Each driver instance has its own:
-
-- Configuration.
-- Capabilities.
-- Resource attachments.
-- Connection state.
-- Observed state.
-
-## Conceptual Interface
-
-A driver should conceptually provide these functions:
+Drivers conceptually provide:
 
 ```text
 connect()
@@ -105,72 +211,46 @@ plan_action(action)
 apply_action(action)
 ```
 
-Exact method names may vary by implementation language.
+The precise abstract interfaces live in the Driver API package.
 
-## Concrete Phase 3 Python Contract
-
-Phase 3 drivers must implement the shared Python contract in
-`workspace_fabric.drivers.base`.
-
-Required common driver methods:
+### Method Requirements
 
 | Method | Purpose | Side effects |
 | --- | --- | --- |
-| `connect()` | Establish communication with the device, service, or agent. | May open a connection. Must not apply workspace changes. |
-| `disconnect()` | Release any active connection. | May close a connection. Must not alter routes. |
-| `health()` | Report communication health as `healthy`, `degraded`, `unreachable`, or `unknown`. | Must not alter routes. |
-| `get_capabilities()` | Return this driver instance's capability inventory. | Must not alter routes. |
-| `get_state()` | Return observed, last-known, assumed, or unknown state. | Must not alter routes. |
-| `validate_action(action)` | Validate a driver action without applying it. | No hardware changes. |
-| `plan_action(action)` | Return a dry-run action plan and warnings/errors. | No hardware changes. |
-| `apply_action(action)` | Apply one assigned action and return a structured result. | May change only resources owned by this driver instance. |
+| `connect()` | Establish communication. | May open connections; must not change workspace state. |
+| `disconnect()` | Release communication resources. | Must not alter routes. |
+| `health()` | Report `healthy`, `degraded`, `unreachable`, or `unknown`. | No route changes. |
+| `get_capabilities()` | Return instance capability inventory. | No route changes. |
+| `get_state()` | Return observed, last-known, assumed, or unknown state. | No route changes. |
+| `validate_action()` | Validate an assigned action. | No hardware changes. |
+| `plan_action()` | Describe the native operation. | No hardware changes. |
+| `apply_action()` | Apply one assigned action. | May change only resources owned by that controller. |
 
-The stable route action names for Phase 3 are:
+## Stable Phase 3 Route Actions
 
-| Action type | Driver interface | Required payload |
+| Action type | Interface | Required payload |
 | --- | --- | --- |
 | `video_route` | `VideoMatrixDriver` | `input_port`, `output_port` |
 | `usb_route` | `UsbMatrixDriver` | `device_port`, `host_port` |
 
-Video matrix drivers should implement:
+Video route helper:
 
 ```python
 route_action(*, input_port: int, output_port: int) -> DriverAction
 ```
 
-The transaction planner may include logical resource IDs such as `source` and `destination` in
-the action payload for logging, dry-run output, and transaction history. Hardware video drivers
-must not depend on those user-facing names to operate. The orchestration layer is responsible for
-resolving logical video sources and displays to device-local physical ports before invoking the
-driver.
-
-USB matrix drivers should implement:
+USB route helper:
 
 ```python
 route_action(*, device_port: int, host_port: int) -> DriverAction
 ```
 
-The transaction planner may include logical resource IDs such as `device` and `host` in the
-action payload for logging, dry-run output, and transaction history. Hardware USB matrix drivers
-must not depend on those user-facing names to operate. The orchestration layer is responsible for
-resolving logical USB devices and hosts to device-local physical ports before invoking the driver.
-
-`DriverAction.timeout_seconds` may be set by the core or a future interface. Drivers that can
-enforce timeouts should return a structured `timeout` error when the timeout is exceeded. Drivers
-that cannot enforce a timeout should leave the action result honest and should not report success
-for unknown state.
-
-## Connection
-
-`connect()` establishes communication with the device, service, or agent.
-
-It should not assume the device is fully functional. Capability and state queries should determine that separately.
+Logical names may be included for logging, dry-run, and transaction history,
+but physical drivers operate on device-local ports resolved by the core.
 
 ## Health
 
-`health()` reports whether the driver can currently communicate with its target.
-
-Possible states:
+Valid common states:
 
 ```text
 healthy
@@ -179,13 +259,11 @@ unreachable
 unknown
 ```
 
+Health confirms communication status, not complete functional correctness.
+
 ## Capabilities
 
-`get_capabilities()` returns the capabilities supported by this driver instance.
-
-Capabilities must be instance-specific.
-
-Capability statuses must use:
+Valid capability statuses:
 
 ```text
 supported
@@ -193,23 +271,12 @@ unsupported
 unknown
 ```
 
-Drivers must not omit unsupported or unknown required capabilities in order to make validation
-pass. If a feature cannot be detected, report `unknown`; do not pretend it is supported.
+Capabilities are controller-instance-specific. Drivers must not omit unknown or
+unsupported required capabilities merely to pass validation.
 
 ## State
 
-`get_state()` reports observed state where available.
-
-Drivers should distinguish:
-
-- Observed state.
-- Last known state.
-- Assumed state.
-- Unknown state.
-
-If hardware cannot query state, the driver should report that limitation clearly.
-
-State should use explicit labels where possible:
+State labels:
 
 ```text
 observed
@@ -218,61 +285,27 @@ assumed
 unknown
 ```
 
-Observed route state should be returned in a stable shape for the driver type. If a device cannot
-query its current route state, report `unknown` or a clear state query warning/error instead of
-returning fabricated route data.
+If hardware cannot query current state, report that limitation. A successful
+command send is not sufficient evidence for `observed` state.
 
-## Validation
+## Validation and Planning
 
-`validate_action(action)` checks whether a requested action is possible for this driver instance.
+Driver validation should catch invalid ports, unsupported capabilities,
+malformed actions, native constraints, and unavailable targets that are visible
+to the driver.
 
-Validation should catch:
-
-- Invalid ports.
-- Unsupported capabilities.
-- Invalid route requests.
-- Unavailable target resources.
-- Driver-specific constraints.
-
-## Planning
-
-`plan_action(action)` returns the hardware-specific action plan without applying it.
-
-This enables dry runs and transaction previews.
+Planning returns the native operation without applying it and must support
+transaction dry-run.
 
 ## Applying
 
-`apply_action(action)` performs the requested action.
+`apply_action()` applies only the single action assigned by the core. Results
+must distinguish success, warning, failure, partial failure, and unknown
+post-action state.
 
-The result should indicate:
+## Structured Issue Categories
 
-- Success.
-- Warning.
-- Failure.
-- Partial failure if applicable.
-- Observed post-action state if available.
-
-`apply_action()` must operate only on the single action assigned by the core. Drivers must not
-execute actions assigned to other drivers, coordinate with other drivers, or infer global workspace
-intent from a route action.
-
-## Driver Coordination
-
-Drivers must not communicate directly with each other.
-
-All coordination happens through the core transaction engine.
-
-Example:
-
-- Video driver routes desktop video to PiKVM capture.
-- USB driver routes PiKVM HID to desktop.
-- PiKVM driver exposes launch URL.
-
-The core coordinates these actions. The drivers remain independent.
-
-## Error Categories
-
-Structured driver issue categories:
+Common categories include:
 
 ```text
 connection_failed
@@ -287,35 +320,52 @@ state_query_failed
 partial_apply
 authentication_failed
 authorization_failed
+missing_driver
+incompatible_driver_api
+plugin_load_failed
 mock_failure
 unknown_error
 ```
 
-Drivers may add more specific categories later, but Phase 3 hardware drivers should use these
-shared categories whenever one applies. Errors should include a clear message and, when practical,
-a path or payload field reference.
+Drivers may add more specific categories later, but shared categories should be
+used whenever applicable.
 
 ## Mock Drivers
 
-Mock drivers are first-class drivers.
+Mock drivers are independently packaged, first-class implementations. They must
+support capability reporting, state query, route application, dry-run planning,
+failure injection, and unsupported-capability simulation.
 
-They should support:
+Mock drivers should be installable through development or test extras rather
+than being mandatory production dependencies.
 
-- Capability reporting.
-- State query.
-- Route application.
-- Dry-run planning.
-- Failure injection.
-- Unsupported capability simulation.
+## Versioning
 
-Mock drivers are required for V0 so the core can be implemented before hardware drivers.
+Core, Driver API, and driver packages use independent semantic versioning.
 
-## V0 Driver Scope
+- Driver fixes and compatible features change only the driver version.
+- Backward-compatible Driver API additions change the Driver API minor version.
+- Breaking Driver API changes change its major version.
+- The core version changes only when the core changes.
 
-V0 should implement:
+## Testing Requirements
 
-- Mock video matrix driver.
-- Mock USB matrix driver.
-- Mock remote console driver if useful.
+Every driver package should include:
 
-Real UHD-808 and UKM404 drivers should wait until the core driver contract and transaction planner are stable.
+- Unit tests for parsing and action behavior
+- Mocked transport tests
+- Configuration-schema tests
+- Plugin descriptor tests
+- Driver API compatibility tests
+- Install/discovery tests
+- Missing-dependency and plugin-load failure tests where applicable
+
+The monorepo integration suite should verify:
+
+- Dynamic discovery
+- Duplicate driver type detection
+- Missing-driver validation
+- Incompatible Driver API handling
+- Upgrade and rollback behavior
+- Removal of unused drivers
+- Preservation of physical smoke-test behavior

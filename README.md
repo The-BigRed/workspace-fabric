@@ -1,228 +1,246 @@
 # Workspace Fabric
 
-> **Software-defined workspace infrastructure for dynamically connecting
-> physical and virtual resources.**
+> **Workspace Fabric makes complex workspaces behave like software.**
 
-Workspace Fabric is an open-source, hardware-agnostic control plane for
-dynamically reconfigurable workspaces. It abstracts the physical and virtual
-connectivity of a modern workspace into a unified, software-controlled fabric.
+Modern desks, labs, studios, and control rooms often contain multiple
+computers, displays, USB peripherals, KVMs, video matrices, remote consoles,
+and automation systems. Changing from one workflow to another frequently
+requires manually switching cables, changing monitor inputs, moving USB
+devices, launching remote consoles, and coordinating multiple independent
+systems.
 
-Instead of thinking about HDMI inputs, USB ports, KVM buttons, or remote
-console URLs, operators interact with logical resources, workspaces, scenes,
-and patches. Workspace Fabric determines how to satisfy that intent using the
-available controllers, drivers, and physical topology.
+Workspace Fabric replaces those manual steps with a single software-defined
+model. Instead of telling individual devices what to do, users describe the
+workspace they want, and Workspace Fabric determines the hardware and software
+actions required to make it happen.
 
-## Project Status
+Whether switching from a desktop to a work laptop, preparing a hybrid meeting,
+connecting to a server through an IP-KVM, or coordinating an entire AV
+environment, Workspace Fabric provides a deterministic control plane that
+translates user intent into reproducible operations.
 
-**Phase 3 – Hardware Integration**
+Workspace Fabric is designed to scale naturally from a single desk with two
+computers and a pair of monitors to complex multi-user environments while
+presenting the same consistent programming model to users, automation systems,
+and future AI agents.
 
-Workspace Fabric has completed its foundational architecture and control plane.
-The project currently includes configuration loading, resource graph
-construction, transaction planning and execution, mock hardware drivers,
-persistent mock state, and a functional command-line interface.
+---
 
-The current focus is replacing mock drivers with hardware drivers, beginning
-with the OREI UHD-808 HDMI matrix and OREI UKM404 USB matrix, then validating
-complete routing against the physical lab.
+# At a Glance
 
-Initial hardware targets include:
+- Hardware-independent architecture
+- API-first design
+- Deterministic transaction engine
+- Modular driver platform
+- Interactive configuration (planned)
+- Optional Reference Web UI
+- Automation and AI friendly
 
-- OREI UHD-808 8×8 HDMI Matrix
-- OREI UKM404 USB Matrix
-- Windows Display Agent
-- PiKVM
+---
 
-Future support is expected for:
+# A Practical Example
 
-- Dell iDRAC
-- HPE iLO
-- Lenovo XClarity / IMM
-- Proxmox VE
-- Home Assistant
-- Additional HDMI, USB, audio, KVM, and management platforms
+Imagine you're deploying a software update to a production environment.
 
-## Why Workspace Fabric?
+The deployment has entered a database migration that's expected to take nearly
+an hour. You need to monitor its progress, but there's nothing to do while it
+runs.
 
-Traditional KVMs switch a keyboard, video, and mouse between computers.
+Rather than dedicating your entire workstation to watching a progress bar, you
+simply activate your **Hybrid Work** workspace.
 
-Workspace Fabric takes a broader view.
+Within seconds:
 
-It models an entire workspace as a collection of interconnected resources and
-provides a control plane capable of coordinating physical switching, remote
-management interfaces, and software consoles through one consistent API.
+- Your primary monitor continues displaying the deployment.
+- Your secondary monitor switches to your personal desktop.
+- Your keyboard, mouse, and speakers follow the secondary workspace.
+- Your deployment continues uninterrupted.
+- Monitoring and notifications remain active.
+- Returning to your full work environment later is a single workspace change
+  away.
 
-The goal is not simply to switch cables.
+A few minutes later, the deployment requires attention.
 
-The goal is to connect everything once and make the underlying transport
-largely irrelevant to the operator.
+Rather than leaving the Hybrid Work workspace, you simply apply the
+**Primary Input** patch.
 
-## Core Principles
+Your keyboard and mouse immediately return to the work system while both
+monitors remain exactly where they are.
 
-- Connect everything once.
-- Route using logical names rather than physical ports.
-- Model physical reality explicitly.
-- Separate hardware-specific logic into modular drivers.
-- Prefer open standards and interoperable APIs.
-- Keep automation transparent and explainable.
-- Design for both humans and automation.
-- Preserve YAML as an open, inspectable configuration representation without
-  requiring operators to author it manually.
+After addressing the issue, applying the **Secondary Input** patch returns your
+keyboard and mouse to the secondary workspace without interrupting either
+display.
 
-## Configuration Model
+Traditional KVMs and matrix switches expose hardware operations.
 
-Workspace Fabric uses the following conceptual hierarchy:
+Workspace Fabric exposes reusable **workspaces** and targeted **patches** that
+describe **what** should change rather than **how** it should change.
+
+The operator never thinks about HDMI ports, USB matrices, monitor inputs, or
+remote consoles.
+
+They simply select the workspace they need, and Workspace Fabric determines how
+to create it.
+
+---
+
+# What Makes Workspace Fabric Different?
+
+Workspace Fabric is not a KVM.
+
+It is not a matrix controller.
+
+It is not a remote desktop launcher.
+
+It is not an automation platform.
+
+It is the software-defined control plane consumed by those systems.
+
+Unlike traditional KVM software or vendor-specific matrix controllers,
+Workspace Fabric is hardware independent.
+
+Drivers isolate vendor-specific behavior, allowing the same workspace model to
+operate across different hardware while exposing a stable API for user
+interfaces, automation systems, and AI agents.
+
+The long-term goal is simple:
+
+> **Users should think about the workspace they want—not the hardware required
+> to create it.**
+
+---
+
+# Architecture Overview
+
+Workspace Fabric models physical and virtual resources independently before
+assembling them into reusable operating environments.
 
 ```text
 Driver
-  ↓
+    ↓
 Controller
-  ↓
-Resource
-  ↓
+    ↓
+Resources
+    ↓
 Workspace
-  ↓
+    ↓
 Scene
-  ↓
+    ↓
 Patch
 ```
 
-- **Drivers** implement hardware- or service-specific behavior.
-- **Controllers** are configured instances of drivers that communicate with
-  specific devices or services.
-- **Resources** represent physical devices, logical objects, and routable
-  endpoints.
-- **Workspaces** describe reusable operating environments.
-- **Scenes** compose one or more workspaces into a complete requested
-  configuration.
-- **Patches** apply focused changes to the current state without redefining or
-  reapplying an entire workspace or scene.
+The core validates requested changes, plans deterministic transactions, and
+coordinates vendor-specific drivers to safely transition the environment from
+its current state to the desired workspace.
 
-The preferred long-term configuration experience is interactive. Drivers expose
-their configuration requirements, ports, and capabilities; users then describe
-what is physically connected. YAML remains the serialized source of truth and
-an advanced editing mechanism.
+Drivers remain responsible only for translating generic Workspace Fabric
+actions into native hardware or software operations.
 
-Architecture decisions and rationale are documented in
-`docs/architecture/adr/`.
+---
 
-## Long-Term Vision
+# Current Status
 
-Workspace Fabric should eventually allow an operator—or another automation
-platform—to request outcomes such as:
+Workspace Fabric is currently progressing through:
 
-- "Work on my desktop."
-- "Open Server 12."
-- "Switch to Presentation Mode."
-- "Add the Stream Deck to the current workspace."
-- "Move the secondary keyboard and mouse without changing anything else."
+**Phase 4 – Modular Driver Platform**
 
-The control plane determines how to satisfy that request, whether by:
+Completed:
 
-- Switching an HDMI matrix
-- Switching a USB matrix
-- Launching an iDRAC or iLO console
-- Opening SSH or RDP
-- Waking a system with Wake-on-LAN
-- Applying a predefined scene
-- Applying a targeted patch
-- Combining multiple workspaces into one coordinated state
+- ✅ Architecture
+- ✅ Foundation
+- ✅ Hardware Integration
 
-## Project Philosophy
+Planned:
 
-Workspace Fabric prioritizes reliability, transparency, and interoperability
-over novelty.
+- Modular Driver Platform
+- Core Interfaces
+- Configuration Experience
+- Productization
+- Release 1.0
 
-Hardware should be abstracted, never hidden. Users should understand what the
-system is doing, and automated actions should be explainable, predictable, and
-reproducible.
+Detailed project status is maintained in
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md).
 
-Workspace Fabric separates intent from implementation. Users request outcomes,
-while the control plane plans the change and drivers determine how assigned
-actions are performed on specific hardware.
+---
 
-Workspace Fabric is not an automation engine. External automation systems may
-decide when to request a workspace, scene, or patch; Workspace Fabric provides
-deterministic validation and execution.
+# Repository Guide
 
-## Repository Layout
+| Document | Purpose |
+|----------|---------|
+| `architecture.md` | High-level system architecture |
+| `philosophy.md` | Long-term engineering philosophy |
+| `roadmap.md` | Development roadmap toward Release 1.0 |
+| `PROJECT_STATUS.md` | Current implementation status |
+| `CHANGELOG.md` | Project history |
+| `docs/adr/` | Architectural Decision Records |
+| `docs/planning/` | Planning, backlog, release strategy, and architectural considerations |
 
-```text
-docs/        Stable project documentation and architecture decisions
-design/      Engineering notes and experiments
-src/         Source code
-tests/       Automated tests
-examples/    Sample configurations and test fixtures
-scripts/     Development utilities
-ai/          AI prompts, conventions, and architecture guidance
-```
+---
 
-## Current Focus
+# Getting Started
 
-Near-term milestones:
+Current development focuses on the reference implementation.
 
-1. Harden the driver contract.
-2. Validate the physical lab configuration.
-3. Develop the OREI UHD-808 driver.
-4. Develop the OREI UKM404 driver.
-5. Develop the Windows Display Agent.
-6. Integrate PiKVM.
-7. Validate end-to-end routing on real hardware.
-8. Add safety, recovery, and clear failure handling.
+Developers interested in contributing should begin by reading:
 
-## Current Capabilities
+1. `philosophy.md`
+2. `architecture.md`
+3. The Architectural Decision Records
+4. `roadmap.md`
+5. `PROJECT_STATUS.md`
 
-- Declarative YAML configuration
-- Resource graph construction
-- Capability validation
-- Transaction planning
-- Transaction execution
-- Workspace transaction history
-- Mock video and USB matrix drivers
-- Persistent mock driver state
-- Workspace-oriented CLI
+Together these documents explain both the architecture and the current
+development priorities.
 
-## Current Limitations
+---
 
-The following are not yet implemented:
+# Development Principles
 
-- Physical hardware drivers
-- Driver-assisted controller discovery
-- Interactive configuration authoring
-- REST API
-- Web UI
-- Desktop application
-- Tablet interface
-- Multi-fabric orchestration
+Workspace Fabric is intentionally built around several enduring principles.
 
-## Operator Smoke Test
+- Intent over implementation
+- Hardware-independent architecture
+- Deterministic execution
+- API-first design
+- Stable architectural boundaries
+- Progressive capability
+- Composition over specialization
 
-```powershell
-.\.venv\Scripts\Activate.ps1
+These principles guide every architectural and implementation decision.
 
-workspace-fabric config validate
-workspace-fabric workspace list
-workspace-fabric apply hybrid_meeting --dry-run
-workspace-fabric apply hybrid_meeting
-workspace-fabric state
-```
+---
 
-Expected results:
+# Project Planning
 
-- Configuration validates successfully.
-- Available workspaces are listed.
-- Dry-run produces a transaction plan.
-- Apply executes mock driver actions.
-- State reflects the applied workspace and records the transaction.
+During initial development, Workspace Fabric follows a milestone-driven
+roadmap.
 
-## Contributing
+Following Release 1.0, development transitions to release-based planning.
 
-The project is in its earliest stages. Suggestions, design discussions, bug
-reports, and contributions are welcome as the architecture evolves.
+Future work is tracked through:
 
-Architectural changes should be captured in an Architecture Decision Record and
-reflected in the stable documentation before implementation diverges from the
-accepted model.
+- Backlog
+- Architectural Considerations
+- Release Strategy
+- CHANGELOG
 
-## License
+rather than additional numbered development phases.
 
-Licensed under the Apache License 2.0.
+---
+
+# Contributing
+
+Contributors are encouraged to understand the architecture before implementing
+new functionality.
+
+Significant architectural changes should be documented through an
+Architectural Decision Record (ADR).
+
+The project favors architectural stability, deterministic behavior, and
+maintainable abstractions over rapid feature growth.
+
+---
+
+# License
+
+*License to be determined.*
