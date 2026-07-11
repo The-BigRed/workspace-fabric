@@ -9,15 +9,17 @@ from workspace_fabric.drivers.base import (
     DriverActionPlan,
     DriverActionResult,
     DriverActionStatus,
+    DriverCapabilityStatus,
     DriverHealth,
     DriverHealthStatus,
     DriverIssue,
+    DriverIssueCategory,
     DriverValidationResult,
 )
 
-CAPABILITY_SUPPORTED = "supported"
-CAPABILITY_UNKNOWN = "unknown"
-CAPABILITY_UNSUPPORTED = "unsupported"
+CAPABILITY_SUPPORTED = DriverCapabilityStatus.SUPPORTED.value
+CAPABILITY_UNKNOWN = DriverCapabilityStatus.UNKNOWN.value
+CAPABILITY_UNSUPPORTED = DriverCapabilityStatus.UNSUPPORTED.value
 
 
 class MockDriverBase:
@@ -63,7 +65,7 @@ class MockDriverBase:
         action_type: str,
         message: str = "Injected mock driver failure",
         *,
-        category: str = "mock_failure",
+        category: str = DriverIssueCategory.MOCK_FAILURE.value,
     ) -> None:
         self._fail_next[action_type] = DriverIssue(category=category, message=message)
 
@@ -72,7 +74,7 @@ class MockDriverBase:
         action_type: str,
         message: str = "Injected mock driver failure",
         *,
-        category: str = "mock_failure",
+        category: str = DriverIssueCategory.MOCK_FAILURE.value,
     ) -> None:
         self._failed_action_types[action_type] = DriverIssue(category=category, message=message)
 
@@ -86,7 +88,7 @@ class MockDriverBase:
             return None
 
         return DriverIssue(
-            category="unsupported_capability",
+            category=DriverIssueCategory.UNSUPPORTED_CAPABILITY.value,
             message=f"Capability {capability!r} is {status!r} for driver {self.id!r}",
             path=path,
         )
@@ -101,7 +103,7 @@ class MockDriverBase:
             if field not in action.payload:
                 errors.append(
                     DriverIssue(
-                        category="invalid_action",
+                        category=DriverIssueCategory.INVALID_ACTION.value,
                         message=f"Required payload field {field!r} is missing",
                         path=f"$.payload.{field}",
                     )

@@ -141,6 +141,38 @@ class _ResourceGraphBuilder:
                     "source_host",
                 )
 
+            if source.driver is None and source.port is None:
+                continue
+            if source.driver is None:
+                self._add_issue(
+                    f"{path}.driver",
+                    "Video source driver is required when a source port is configured",
+                )
+                continue
+            if source.port is None:
+                self._add_issue(
+                    f"{path}.port",
+                    "Video source port is required when a source driver is configured",
+                )
+                continue
+
+            driver = self._require_resource(
+                ResourceKind.DRIVER,
+                source.driver,
+                f"{path}.driver",
+                "driver",
+            )
+            if driver is not None:
+                self._require_same_fabric(source.fabric, driver.fabric, f"{path}.driver", "driver")
+                self._add_edge(
+                    ResourceKind.VIDEO_SOURCE,
+                    source.id,
+                    ResourceKind.DRIVER,
+                    source.driver,
+                    "attached_to_driver",
+                    {"port": source.port},
+                )
+
     def _validate_video_outputs(self) -> None:
         for output in self._config.video_outputs.values():
             path = f"$.video_outputs.{output.id}"

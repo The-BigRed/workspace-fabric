@@ -62,6 +62,8 @@ class VideoRouteResolution:
     output: VideoOutputConfig
     driver: DriverConfig
     source_host: HostConfig
+    input_port: int | None
+    output_port: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,12 +135,28 @@ class ResourceGraph:
             )
 
         output = self.config.video_outputs[display.output]
+        if source.driver is not None and source.driver != output.driver:
+            raise ResourceGraphError(
+                [
+                    ResourceGraphIssue(
+                        f"$.video_sources.{source.id}.driver",
+                        (
+                            f"Video source {source.id!r} is attached to driver "
+                            f"{source.driver!r}, but display {display.id!r} is attached to "
+                            f"driver {output.driver!r}"
+                        ),
+                    )
+                ]
+            )
+
         return VideoRouteResolution(
             display=display,
             source=source,
             output=output,
             driver=self.config.drivers[output.driver],
             source_host=self.config.hosts[source.host],
+            input_port=source.port,
+            output_port=output.port,
         )
 
     def dump(self) -> dict[str, Any]:
@@ -171,7 +189,15 @@ class ResourceGraph:
     def _dump_relationships(self) -> dict[str, Any]:
         return {
             "video_sources": {
-                source_id: {"host": source.host}
+                source_id: {
+                    key: value
+                    for key, value in {
+                        "host": source.host,
+                        "driver": source.driver,
+                        "port": source.port,
+                    }.items()
+                    if value is not None
+                }
                 for source_id, source in sorted(self.config.video_sources.items())
             },
             "displays": {

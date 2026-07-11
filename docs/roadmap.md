@@ -1,73 +1,216 @@
 # Workspace Fabric Roadmap
 
-## Current Status
-**Current Phase:** Phase 2 – Foundation
+## Purpose
 
-## Phase 1 – Architecture ✅
-Architecture, philosophy, engineering contracts, AI guidance, and reference documentation are complete.
+This document describes the planned evolution of Workspace Fabric through its
+first complete public release.
 
-## Phase 2 – Foundation ✅
-1. Repository Skeleton ✅
-2. Configuration Loader ✅
-3. Resource Graph ✅
-4. Mock Drivers ✅
-5. Capability Validation ✅
-6. Transaction Planner ✅
-7. Transaction Executor ✅
-8. Minimal CLI/API ✅
-9. Persistent Mock State ✅
+Detailed implementation progress is tracked in `PROJECT_STATUS.md`.
 
-Completion Criteria:
-- Configuration loads and validates
-- Resource graph builds successfully
-- Workspace planning succeeds
-- Mock transactions execute successfully
-- Mock driver state persists across CLI invocations
-- Transaction history is recorded
+After the initial public release, development transitions from milestone-driven
+planning to release-based development. Future work is tracked through the
+project planning documents rather than additional numbered phases.
 
-## Phase 3 – Hardware Integration (Current)
-- UHD-808
-- UKM404
+---
+
+# Phase 1 – Architecture ✅
+
+## Objective
+
+Define the core architecture, engineering philosophy, terminology, and
+architectural boundaries.
+
+## Outcome
+
+A stable architectural foundation capable of supporting multiple hardware
+platforms without coupling the core to vendor-specific implementations.
+
+---
+
+# Phase 2 – Foundation ✅
+
+## Objective
+
+Build the hardware-independent core platform.
+
+## Major Deliverables
+
+- Repository structure
+- Configuration loader
+- Resource graph
+- Capability validation
+- Transaction planner
+- Transaction executor
+- Mock drivers
+- Persistent state
+- Initial CLI
+
+## Outcome
+
+Workspace Fabric can validate configuration, plan transactions, and execute
+operations against mock hardware.
+
+---
+
+# Phase 3 – Hardware Integration ✅
+
+## Objective
+
+Validate the architecture against real hardware.
+
+## Major Deliverables
+
+- Driver contract hardening
+- Physical lab configuration
+- OREI UHD-808 driver
+- OREI UKM404 driver
 - Windows Display Agent
-- PiKVM
+- PiKVM integration
+- End-to-end physical validation
+- Safety and recovery behavior
 
-Completion Criteria:
-- UHD-808 driver fully functional
-- UKM404 driver fully functional
-- Windows Display Agent operational
-- PiKVM integration operational
-- End-to-end routing verified on physical hardware
-- CLI operates physical hardware without mock drivers
+## Outcome
 
-DeviceGroup / composite endpoint support is a future model enhancement. Phase 3 may continue using descriptive routable device names for composite USB endpoints.
+Workspace Fabric has successfully transitioned from mock drivers to physical
+hardware.
 
-## Phase 4 – API and Applications
-- Local API service
-- Auth / operator permissions
-- Web UI
-- Tablet UI
-- Desktop client
-- Automation integrations
-- Local Console Virtualization
+The driver abstraction, controller model, transaction engine, and
+configuration architecture have all been validated against a real reference
+environment.
 
-Completion Criteria:
-- Stable local API
-- Authentication implemented
-- Web UI operational
-- Desktop client operational
-- Tablet UI operational
-- All CLI functionality available through the API
+---
 
-## Phase 5 – Ecosystem
-- Multi-fabric federation
-- Multi-user orchestration
-- Enterprise integrations
-- Plugin ecosystem
-- Automation and AI consume the public API without requiring special interfaces
+# Phase 4 – Modular Driver Platform
 
-Completion Criteria:
-- Multiple fabrics can be orchestrated
-- Multi-user access control implemented
-- External integrations documented
-- Plugin API stable
-- First third-party plugin demonstrated
+## Objective
+
+Decouple drivers from the Workspace Fabric core and establish a modular,
+independently versioned driver platform.
+
+## Major Deliverables
+
+- Driver package architecture
+- Versioned Driver API
+- Plugin discovery
+- Driver metadata catalog
+- Independent driver lifecycle
+- Mock driver migration
+- OREI driver migration
+- Physical regression validation
+
+## Completion Criteria
+
+Drivers are independently installable, discoverable, versioned, and validated.
+
+The Workspace Fabric core contains no vendor-specific implementations and
+interacts with drivers exclusively through the published Driver API.
+
+---
+
+# Phase 5 – Core Interfaces
+
+## Objective
+
+Expose the Workspace Fabric control plane through stable public interfaces.
+
+## Major Deliverables
+
+- Stable REST API
+- API versioning
+- API documentation
+- CLI completion
+- Transaction APIs
+- State APIs
+- Workspace, Scene, and Patch APIs
+- Health APIs
+- API key authentication
+- OAuth-style authorization scopes
+
+## Completion Criteria
+
+Every core Workspace Fabric operation is available through the public API.
+
+The CLI serves as a reference implementation of that API.
+
+External consumers can fully operate Workspace Fabric without requiring
+knowledge of internal implementation details.
+
+---
+
+# Phase 6 – Configuration Experience
+
+## Objective
+
+Replace manual configuration authoring with an intuitive interactive
+configuration experience.
+
+## Major Deliverables
+
+- Driver onboarding
+- Interactive configuration
+- Physical topology editor
+- Workspace editor
+- Scene editor
+- Patch editor
+- Configuration validation
+- Reference Web UI
+- Desktop application
+
+## Completion Criteria
+
+Users can configure and operate Workspace Fabric without manually editing YAML.
+
+YAML remains the serialized source of truth rather than the primary authoring
+experience.
+
+The reference Web UI remains an optional component that consumes the same
+public API available to all clients.
+
+---
+
+# Phase 7 – Productization
+
+## Objective
+
+Deliver the first complete public release of Workspace Fabric.
+
+## Major Deliverables
+
+- Packaging
+- Installation
+- API key lifecycle management
+- Diagnostics
+- Logging
+- Backup and restore
+- Configuration migration
+- Operator documentation
+- Stable public API (v1)
+- Release readiness validation
+
+## Completion Criteria
+
+Workspace Fabric is suitable for daily production use.
+
+Installation, configuration, operation, and maintenance are fully documented.
+
+The project transitions from milestone-driven development to release-based
+development.
+
+---
+
+# Release 1.0
+
+Completion of Phase 7 constitutes the first complete public release of
+Workspace Fabric.
+
+Subsequent development is managed through:
+
+- Project Backlog
+- Architectural Considerations
+- Release Strategy
+- CHANGELOG
+
+rather than additional numbered phases.
+
+Future enhancements are intentionally managed independently of the initial
+development roadmap.

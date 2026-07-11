@@ -8,12 +8,14 @@ from workspace_fabric.drivers.base import (
     DriverAction,
     DriverActionResult,
     DriverActionStatus,
+    DriverActionType,
     DriverIssue,
+    DriverIssueCategory,
     DriverValidationResult,
 )
 from workspace_fabric.drivers.mock.base import CAPABILITY_SUPPORTED, MockDriverBase
 
-VIDEO_ROUTE_ACTION = "video_route"
+VIDEO_ROUTE_ACTION = DriverActionType.VIDEO_ROUTE.value
 VIDEO_ROUTING_CAPABILITY = "video_routing"
 
 
@@ -43,13 +45,28 @@ class MockVideoMatrixDriver(MockDriverBase):
         state["routes"] = dict(self._routes)
         return state
 
-    def route_action(self, *, source: str, destination: str) -> DriverAction:
+    def route_action(
+        self,
+        *,
+        source: str | None = None,
+        destination: str | None = None,
+        input_port: int | None = None,
+        output_port: int | None = None,
+    ) -> DriverAction:
+        source_id = source if source is not None else f"input_{input_port}"
+        destination_id = destination if destination is not None else f"output_{output_port}"
+        payload: dict[str, Any] = {
+            "source": source_id,
+            "destination": destination_id,
+        }
+        if input_port is not None:
+            payload["input_port"] = input_port
+        if output_port is not None:
+            payload["output_port"] = output_port
+
         return DriverAction(
             action_type=VIDEO_ROUTE_ACTION,
-            payload={
-                "source": source,
-                "destination": destination,
-            },
+            payload=payload,
         )
 
     def validate_action(self, action: DriverAction) -> DriverValidationResult:
@@ -57,7 +74,7 @@ class MockVideoMatrixDriver(MockDriverBase):
         if action.action_type != VIDEO_ROUTE_ACTION:
             errors.append(
                 DriverIssue(
-                    category="invalid_action",
+                    category=DriverIssueCategory.INVALID_ACTION.value,
                     message=f"Unsupported action type {action.action_type!r}",
                     path="$.action_type",
                 )
@@ -118,7 +135,7 @@ class MockVideoMatrixDriver(MockDriverBase):
             if field in action.payload and not isinstance(value, str):
                 errors.append(
                     DriverIssue(
-                        category="invalid_action",
+                        category=DriverIssueCategory.INVALID_ACTION.value,
                         message=f"Payload field {field!r} must be a string",
                         path=f"$.payload.{field}",
                     )

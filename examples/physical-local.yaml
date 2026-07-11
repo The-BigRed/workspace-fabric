@@ -1,0 +1,281 @@
+# Workspace Fabric physical lab configuration.
+#
+# This is the loader-valid Phase 3.4 lab configuration derived from
+# examples/lab/physical-lab.seed.yaml. The seed preserves the richer future
+# Controller -> Resource -> Workspace -> Scene -> Patch shape; this file uses
+# the currently implemented V0 configuration schema so it can be validated and
+# used for Phase 3.5 physical smoke testing.
+# Scene and patch YAML sections are deferred until a future schema version.
+
+version: 1
+
+fabrics:
+  physical_lab:
+    display_name: Physical Lab
+    description: UHD-808 and dual UKM-404 lab environment
+
+drivers:
+  video_matrix_uhd808:
+    type: orei_uhd808
+    fabric: physical_lab
+    connection:
+      transport: telnet
+      host: 172.24.2.192
+      port: 23
+      timeout_seconds: 5
+    capabilities:
+      video_routing: supported
+      route_query: supported
+      fast_switching: unsupported
+
+  usb_matrix_ukm404_a:
+    type: orei_ukm404
+    fabric: physical_lab
+    connection:
+      transport: telnet
+      host: 172.24.2.193
+      port: 23
+      timeout_seconds: 5
+    capabilities:
+      usb_routing: supported
+      route_query: supported
+      per_device_routing: supported
+
+  usb_matrix_ukm404_b:
+    type: orei_ukm404
+    fabric: physical_lab
+    connection:
+      transport: telnet
+      host: 172.24.2.194
+      port: 23
+      timeout_seconds: 5
+    capabilities:
+      usb_routing: supported
+      route_query: supported
+      per_device_routing: supported
+
+hosts:
+  desktop:
+    fabric: physical_lab
+    display_name: Personal Desktop
+
+  work_laptop:
+    fabric: physical_lab
+    display_name: Work Laptop
+
+  pikvm:
+    fabric: physical_lab
+    display_name: PiKVM
+
+video_sources:
+  desktop_display_1:
+    fabric: physical_lab
+    host: desktop
+    driver: video_matrix_uhd808
+    port: 1
+    display_name: Desktop Display Output 1
+
+  desktop_display_2:
+    fabric: physical_lab
+    host: desktop
+    driver: video_matrix_uhd808
+    port: 2
+    display_name: Desktop Display Output 2
+
+  work_laptop_display_1:
+    fabric: physical_lab
+    host: work_laptop
+    driver: video_matrix_uhd808
+    port: 3
+    display_name: Work Laptop Display Output 1
+
+  work_laptop_display_2:
+    fabric: physical_lab
+    host: work_laptop
+    driver: video_matrix_uhd808
+    port: 4
+    display_name: Work Laptop Display Output 2
+
+video_outputs:
+  uhd808_out1:
+    fabric: physical_lab
+    driver: video_matrix_uhd808
+    port: 1
+
+  uhd808_out2:
+    fabric: physical_lab
+    driver: video_matrix_uhd808
+    port: 2
+
+  uhd808_out3:
+    fabric: physical_lab
+    driver: video_matrix_uhd808
+    port: 3
+
+displays:
+  primary_4k:
+    fabric: physical_lab
+    display_name: Primary 4K Display
+    output: uhd808_out1
+
+  secondary_2k:
+    fabric: physical_lab
+    display_name: Secondary 2K Display
+    output: uhd808_out2
+
+  pikvm_capture:
+    fabric: physical_lab
+    display_name: PiKVM Capture Input
+    output: uhd808_out3
+
+usb_matrices:
+  ukm404_a:
+    fabric: physical_lab
+    driver: usb_matrix_ukm404_a
+    hosts:
+      1: desktop
+      2: work_laptop
+
+  ukm404_b:
+    fabric: physical_lab
+    driver: usb_matrix_ukm404_b
+    hosts:
+      1: desktop
+      2: work_laptop
+
+usb_devices:
+  primary_keyboard:
+    fabric: physical_lab
+    display_name: Primary Keyboard
+    matrix: ukm404_a
+    device_port: 1
+
+  primary_mouse:
+    fabric: physical_lab
+    display_name: Primary Mouse
+    matrix: ukm404_a
+    device_port: 2
+
+  secondary_keyboard:
+    fabric: physical_lab
+    display_name: Secondary Keyboard
+    matrix: ukm404_a
+    device_port: 3
+
+  secondary_mouse:
+    fabric: physical_lab
+    display_name: Secondary Mouse
+    matrix: ukm404_a
+    device_port: 4
+
+  webcam:
+    fabric: physical_lab
+    display_name: Webcam
+    matrix: ukm404_b
+    device_port: 1
+
+  drop_mic:
+    fabric: physical_lab
+    display_name: Drop Microphone
+    matrix: ukm404_b
+    device_port: 2
+
+  fingerprint_reader:
+    fabric: physical_lab
+    display_name: Fingerprint Reader
+    matrix: ukm404_b
+    device_port: 3
+
+  pikvm_keyboard_mouse_hid:
+    fabric: physical_lab
+    display_name: PiKVM Composite Keyboard/Mouse HID
+    matrix: ukm404_b
+    device_port: 4
+
+workspaces:
+  desktop:
+    fabric: physical_lab
+    display_name: Desktop
+    video:
+      primary_4k: desktop_display_1
+      secondary_2k: desktop_display_2
+    usb:
+      primary_keyboard: desktop
+      primary_mouse: desktop
+
+  desktop_full:
+    fabric: physical_lab
+    display_name: Desktop Full
+    video:
+      primary_4k: desktop_display_1
+      secondary_2k: desktop_display_2
+    usb:
+      primary_keyboard: desktop
+      primary_mouse: desktop
+      webcam: desktop
+      drop_mic: desktop
+      fingerprint_reader: desktop
+
+  work:
+    fabric: physical_lab
+    display_name: Work Laptop
+    video:
+      primary_4k: work_laptop_display_1
+      secondary_2k: work_laptop_display_2
+    usb:
+      primary_keyboard: work_laptop
+      primary_mouse: work_laptop
+
+  work_full:
+    fabric: physical_lab
+    display_name: Work Laptop Full
+    video:
+      primary_4k: work_laptop_display_1
+      secondary_2k: work_laptop_display_2
+    usb:
+      primary_keyboard: work_laptop
+      primary_mouse: work_laptop
+      webcam: work_laptop
+      drop_mic: work_laptop
+      fingerprint_reader: work_laptop
+
+  hybrid_meeting:
+    fabric: physical_lab
+    display_name: Hybrid Meeting
+    video:
+      primary_4k: desktop_display_1
+      secondary_2k: work_laptop_display_1
+    usb:
+      primary_keyboard: desktop
+      primary_mouse: desktop
+      webcam: work_laptop
+      drop_mic: work_laptop
+      fingerprint_reader: work_laptop
+
+  split_desktop_and_laptop:
+    fabric: physical_lab
+    display_name: Split Desktop and Laptop
+    video:
+      primary_4k: desktop_display_1
+      secondary_2k: work_laptop_display_1
+    usb:
+      primary_keyboard: desktop
+      primary_mouse: desktop
+      secondary_keyboard: work_laptop
+      secondary_mouse: work_laptop
+
+  pikvm_capture_desktop:
+    fabric: physical_lab
+    display_name: PiKVM Capture Desktop
+    video:
+      pikvm_capture: desktop_display_1
+    usb:
+      pikvm_keyboard_mouse_hid: desktop
+
+  pikvm_capture_work_laptop:
+    fabric: physical_lab
+    display_name: PiKVM Capture Work Laptop
+    video:
+      pikvm_capture: work_laptop_display_1
+    usb:
+      pikvm_keyboard_mouse_hid: work_laptop

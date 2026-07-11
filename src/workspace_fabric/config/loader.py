@@ -260,11 +260,17 @@ class _ConfigParser:
         raw_item: Mapping[Any, Any],
         path: str,
     ) -> VideoSourceConfig:
-        self._check_allowed_fields(raw_item, path, {"fabric", "host", "display_name"})
+        self._check_allowed_fields(
+            raw_item,
+            path,
+            {"fabric", "host", "display_name", "driver", "port"},
+        )
         return VideoSourceConfig(
             id=resource_id,
             fabric=self._required_str(raw_item, path, "fabric"),
             host=self._required_str(raw_item, path, "host"),
+            driver=self._optional_str(raw_item, path, "driver"),
+            port=self._optional_positive_int(raw_item, path, "port"),
             display_name=self._optional_str(raw_item, path, "display_name"),
         )
 
@@ -534,6 +540,25 @@ class _ConfigParser:
         if value <= 0:
             self._add_issue(f"{path}.{field_name}", "Expected a positive integer")
             return 0
+        return value
+
+    def _optional_positive_int(
+        self,
+        raw_item: Mapping[Any, Any],
+        path: str,
+        field_name: str,
+    ) -> int | None:
+        if field_name not in raw_item:
+            return None
+        value = raw_item[field_name]
+        if value is None:
+            return None
+        if not self._is_int(value):
+            self._add_issue(f"{path}.{field_name}", "Expected a positive integer")
+            return None
+        if value <= 0:
+            self._add_issue(f"{path}.{field_name}", "Expected a positive integer")
+            return None
         return value
 
     def _required_mapping(

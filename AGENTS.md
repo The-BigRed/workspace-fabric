@@ -1,205 +1,212 @@
 # AGENTS.md
 
-This file is an entry point for AI coding agents working in this repository.
-It does not replace the project documentation. When details matter, read and
-follow the referenced documents.
+This file is the entry point for AI coding agents working in Workspace Fabric.
+It supplements, but does not replace, the stable project documentation and
+accepted ADRs.
 
 ## Read First
 
-Start with these documents, in this order:
+Read these documents in order:
 
-1. `README.md` for the project summary, status, and repository layout.
-2. `PROJECT_STATUS.md` and `docs/roadmap.md` for the current phase, current
-   milestone, and longer-term phase sequence.
-3. `CONTRIBUTING.md` for contribution expectations.
-4. `ai/project.md` for AI-specific project context, current phase, priorities,
-   and explicit non-goals.
-5. `docs/philosophy.md` for the engineering philosophy and design litmus test.
-6. `docs/architecture.md` for the layered architecture and core boundaries.
-7. `docs/resource-model.md`, `docs/configuration-model.md`,
-   `docs/capability-model.md`, and `docs/transaction-model.md` for the core
-   models.
-8. `docs/driver-contract.md` before writing or changing any driver code.
-9. `docs/phase-2-foundation.md` and `ai/implementation-roadmap.md` for the
-   current implementation sequence and acceptance criteria.
-10. `docs/developer-standards.md` and `ai/coding-guidelines.md` before making
-   code changes.
-11. `design/decisions/` for accepted Architecture Decision Records.
-12. `examples/local-workspace.yaml` for the current mock configuration shape.
-13. `docs/reference-platform.md` and `docs/hardware/` for reference hardware
-    context before hardware-related work.
+1. `README.md`
+2. `PROJECT_STATUS.md`
+3. `docs/roadmap.md`
+4. `CONTRIBUTING.md`
+5. `ai/project.md`
+6. The current phase document under `ai/implementation/`
+7. `docs/philosophy.md`
+8. `docs/architecture.md`
+9. `docs/architecture/adr/`, especially ADR-0006 during Phase 4
+10. `docs/driver-contract.md`
+11. `docs/configuration-model.md`
+12. `docs/capability-model.md`
+13. `docs/developer-standards.md`
+14. Relevant hardware documentation and observations
 
 Use `docs/glossary.md` whenever terminology is unclear.
 
 ## Source of Truth
 
-- Stable architecture and model documentation lives in `docs/`.
-- Accepted design decisions live in `design/decisions/`.
-- Current phase and milestone status lives in `PROJECT_STATUS.md`; phase-level
-  sequencing lives in `docs/roadmap.md`.
-- AI-specific summaries and guardrails live in `ai/`.
-- Contribution expectations live in `CONTRIBUTING.md`.
-- Examples are implementation patterns and test fixtures, not replacements for
-  the model documents.
-- Reference platform and hardware notes validate the architecture and guide
-  driver work, but they do not define the core model.
-- `docs/design/architecture-capture-2026-07.md` is historical design capture and
-  source material. Prefer the permanent docs and ADRs for current decisions.
+When documents disagree, prefer:
 
-If documents disagree, prefer accepted ADRs first, then the stable documents in
-`docs/`, then AI summaries in `ai/`, then examples. Update documentation when an
-architecture change is intentionally made.
+1. Accepted ADRs
+2. Stable documents under `docs/`
+3. `PROJECT_STATUS.md` and `docs/roadmap.md`
+4. AI guidance under `ai/`
+5. Examples and historical captures
+
+Do not rewrite architecture documentation to justify an implementation
+shortcut. Report conflicts before implementing behavior that contradicts an
+accepted ADR.
 
 ## Project Objective
 
-Workspace Fabric is a software-defined workspace control plane. Users describe
-the workspace they want; the system validates that intent, plans a transaction,
-and coordinates drivers to apply it across physical devices, software agents,
-and remote services.
+Workspace Fabric is a software-defined workspace control plane. It validates,
+plans, executes, and observes deterministic changes across physical devices,
+software agents, and services.
 
-The core idea is intent over implementation. The project is not a KVM, matrix
-controller, remote desktop launcher, or automation engine. It is the control
-plane that automation systems and user interfaces consume.
+Workspace Fabric is not an automation engine. OpenClaw, Home Assistant, AI, and
+other systems consume its public API.
 
 ## Current Scope
 
-Check `PROJECT_STATUS.md` for the current phase and milestone. The project is
-currently in Phase 2: Foundation, with implementation beginning at the
-Configuration Loader milestone. Build the core orchestration foundation with
-mock drivers before real hardware drivers.
+Phase 3 is complete. The current phase is:
 
-The intended order is:
+```text
+Phase 4 – Modular Driver Platform
+```
 
-1. Configuration loader.
-2. Resource graph.
-3. Mock drivers.
-4. Capability validation.
-5. Transaction planner.
-6. Transaction executor.
-7. Minimal CLI or REST API.
-8. Real hardware drivers.
+The objective is to separate drivers from the core application without changing
+working physical behavior.
 
-Do not implement real OREI UHD-808 or UKM404 drivers, PiKVM integration, a
-production web UI, multi-user support, multi-fabric federation, Local Console
-Virtualization, plugin marketplaces, or advanced policy engines until the
-foundation milestones are complete.
+Current sequence:
 
-## Architecture Boundaries
+1. Driver packaging and discovery ADR
+2. Monorepo package structure
+3. Versioned Driver API package
+4. Entry-point discovery
+5. Driver metadata and catalog
+6. Mock and OREI package migration
+7. Lifecycle and compatibility validation
+8. Physical regression testing
 
-- Keep `src/workspace_fabric/core/` hardware agnostic.
-- Put vendor-specific protocols and device behavior only in drivers.
-- Treat resources, capabilities, transactions, and configuration as first-class
-  models.
-- Keep planning separate from execution.
-- Drivers report capabilities and observed state, validate driver-specific
-  actions, and apply assigned actions.
-- Drivers must not coordinate directly with other drivers or make global policy
-  decisions.
-- Optional capabilities are negotiated per driver instance. Do not assume EDID,
-  scaling, fast switching, HPD control, route query, or similar features exist.
-- Resource attachment is explicit. Do not assume global port symmetry or shared
-  USB host maps across matrices.
+## Phase 4 Package Boundaries
+
+The target dependency direction is:
+
+```text
+core ───────────────┐
+                    ├──> driver-api
+implementation ─────┘
+```
+
+Rules:
+
+- Core code must not import vendor driver packages.
+- Driver packages must not import core orchestration modules.
+- Core and drivers may depend on the shared Driver API.
+- Driver discovery must use Python package entry points.
+- Do not implement production discovery by scanning arbitrary source folders.
+- Existing driver type identifiers should remain stable.
+- An unused installed driver must have no runtime side effects.
+- A configured but missing driver must fail validation with a structured error.
+- Driver versions must remain independent from the core version.
+
+## Repository Direction
+
+The repository remains a monorepo. The expected direction is:
+
+```text
+packages/
+  core/
+  driver-api/
+  driver-mock/
+  driver-orei-uhd808/
+  driver-orei-ukm404/
+
+docs/
+examples/
+integration-tests/
+scripts/
+ai/
+```
+
+Do not create separate Git repositories during Phase 4 unless explicitly
+instructed.
+
+The exact build-workspace tooling should be selected through focused evaluation
+and documented before broad restructuring. Prefer standard Python packaging and
+minimal custom tooling.
+
+## Driver Discovery Contract
+
+Drivers register under:
+
+```text
+workspace_fabric.drivers
+```
+
+Discovery should use `importlib.metadata.entry_points()` or the supported stable
+equivalent.
+
+The core must:
+
+- Discover installed plugins
+- Validate duplicate driver type identifiers
+- Validate Driver API compatibility
+- Isolate and report plugin-load failures
+- Build a catalog usable by future Phase 5 APIs and authoring tools
 
 ## Development Expectations
 
-- Before making code changes, identify the current milestone, list the project documents used to
-  guide the implementation, summarize the implementation plan, identify the files expected to
-  change, and define the acceptance criteria. Do not proceed if the task conflicts with the
-  documented milestone sequence.
-- Do not rewrite architecture documents to justify an implementation shortcut. If implementation
-  and documentation conflict, stop and report the conflict unless explicitly asked to update the
-  architecture.
-- Prefer small, focused changes aligned with the documented milestone sequence.
-- Follow `CONTRIBUTING.md` for contributor expectations.
-- Ask for clarification rather than inventing architecture that is not in the
-  docs.
-- Preserve abstraction boundaries even when only a single implementation currently exists.
-  Avoid coupling core logic to specific hardware or protocols for convenience.
-- Keep pull requests focused.
-- Use mock drivers first to prove core behavior.
-- Validate before applying changes.
-- Return structured errors and warnings.
-- Do not silently ignore invalid configuration.
-- Logs should explain what was requested, planned, executed, and observed.
+Before changing code:
 
-## Coding Standards
+1. Identify the current milestone.
+2. List the ADRs and stable documents governing the change.
+3. Audit existing behavior before proposing a rewrite.
+4. Identify expected files and packages to change.
+5. Define acceptance criteria.
+6. State backward-compatibility implications.
 
-This is a Python project. ADR 0001 records Python as the primary implementation
-language.
+During Phase 4:
 
-Follow:
-
-- `.editorconfig` for whitespace and file formatting.
-- `pyproject.toml` for Black and Ruff settings.
-- `docs/developer-standards.md` for engineering expectations.
-- `ai/coding-guidelines.md` for AI-specific implementation rules.
-
-Current formatter and lint expectations include Python 3.14, line length 100,
-Black formatting, Ruff formatting, and Ruff lint rules `E`, `F`, `I`, `B`, and
-`UP`.
-
-Workspace Fabric targets the latest stable CPython release. Contributors should develop and test
-using the version specified in `pyproject.toml`.
+- Prefer extraction and adaptation over rewriting physical drivers.
+- Keep each migration step buildable and testable.
+- Preserve the working physical configuration.
+- Use mock packages for discovery and lifecycle tests first.
+- Avoid adding new hardware capabilities.
+- Keep public configuration identifiers stable.
+- Add compatibility adapters only when they are explicit, tested, and temporary.
 
 ## Testing Requirements
 
-Every core behavior should include unit tests for success, validation failures,
-and edge cases. Use mock drivers whenever practical.
+Every Phase 4 change should run the applicable formatter, linter, unit tests,
+package build tests, and integration tests.
 
-Every Codex change should:
+Coverage must include:
 
-- Include the exact commands used for formatting, linting, and testing.
-- State whether those commands completed successfully.
-- Explain any skipped tests or known limitations.
+- Plugin discovery
+- Duplicate driver type identifiers
+- Missing driver
+- Incompatible Driver API
+- Plugin-load failure
+- Installed but unused driver
+- Driver uninstall after configuration removal
+- Driver upgrade and rollback
+- Existing transaction behavior
+- Existing mock behavior
+- Physical smoke-test regression at the end of the phase
 
-Minimum early test coverage should include:
+Every coding-agent result must state the exact commands run and whether they
+succeeded.
 
-- Valid configuration.
-- Missing references.
-- Duplicate IDs.
-- Valid USB route.
-- Invalid USB route caused by missing host attachment.
-- Capability `prefer` warning.
-- Capability `require` failure.
-- Transaction dry run.
-- Mock transaction execution.
+## Phase 4 Non-Goals
 
-## Repository Navigation
+Do not implement these unless explicitly requested to satisfy a Phase 4
+requirement:
 
-- `docs/` contains stable project documentation.
-- `ai/` contains AI prompts, summaries, conventions, and roadmap guidance.
-- `design/decisions/` contains accepted ADRs.
-- `examples/` contains sample configuration.
-- `src/workspace_fabric/config/` is for configuration loading and validation.
-- `src/workspace_fabric/core/` is for resource graph, planning, transactions,
-  and state.
-- `src/workspace_fabric/drivers/` is for driver interfaces, mock drivers, and
-  future hardware or service drivers.
-- `src/workspace_fabric/api/` and `src/workspace_fabric/cli/` are interface
-  layers over the same core services.
-- `tests/` mirrors the implementation areas.
+- REST API or production server
+- Authentication or permissions
+- Web, desktop, or tablet applications
+- Interactive configuration authoring
+- Windows Display Agent
+- PiKVM
+- EDID, scaler, CEC, or ARC expansion
+- New hardware drivers
+- Multi-user orchestration
+- Multi-fabric federation
+- Plugin marketplace
 
-## Implementation Constraints
+## Coding Standards
 
-- YAML is the initial configuration format.
-- V0 may start with a single config file but should not prevent later split
-  configuration.
-- Config must include a schema version and be validated before use.
-- Missing references, duplicate IDs, invalid capability policies, and invalid
-  routes should fail clearly.
-- Dry-run planning is required before real application behavior.
-- Transaction rollback is not required for V0, but transaction records should
-  preserve enough information to support future rollback or undo.
-- If hardware state cannot be queried, report `unknown`; do not pretend success
-  or support.
-- Reference hardware informs drivers but must not define the core architecture.
+Workspace Fabric targets Python 3.13 or newer. Follow the version and tooling
+specified by the active package `pyproject.toml` files.
 
-## Working Style
-
-When implementing new functionality:
-
-1. Understand before implementing.
-2. Extend before replacing.
-3. Prefer incremental pull requests over large changes.
-4. Preserve existing architecture unless explicitly instructed otherwise.
-5. Leave the repository in a buildable and testable state.
+- Prefer readability over cleverness.
+- Use typed, explicit interfaces.
+- Return structured errors.
+- Avoid hidden global state.
+- Preserve semantic versioning.
+- Preserve backward compatibility whenever practical.
+- Keep vendor-specific behavior inside driver packages.
+- Keep orchestration policy inside the core.

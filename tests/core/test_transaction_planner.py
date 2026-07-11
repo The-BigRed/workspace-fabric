@@ -7,6 +7,19 @@ from workspace_fabric.core.graph import build_resource_graph
 from workspace_fabric.core.planner import USB_ROUTE_ACTION, VIDEO_ROUTE_ACTION, plan_workspace
 from workspace_fabric.core.transactions import TransactionPlanStatus
 from workspace_fabric.drivers.mock import MockVideoMatrixDriver, create_mock_drivers
+from workspace_fabric.drivers.usb import OreiUkm404UsbDriver
+from workspace_fabric.drivers.video import OreiUhd808VideoDriver
+
+
+class PlanningOnlyTransport:
+    def connect(self) -> None:
+        raise AssertionError("planner must not connect to hardware")
+
+    def disconnect(self) -> None:
+        raise AssertionError("planner must not disconnect hardware")
+
+    def send_command(self, command: str, *, timeout_seconds: float | None = None) -> str:
+        raise AssertionError("planner must not send hardware commands")
 
 
 def test_workspace_converts_to_transaction_plan_with_video_and_usb_actions() -> None:
@@ -72,6 +85,118 @@ def test_transaction_plan_exposes_dry_run_output() -> None:
     }
     assert output["transaction"]["warnings"] == []
     assert output["transaction"]["errors"] == []
+
+
+def test_transaction_planner_translates_video_resources_to_driver_ports() -> None:
+    config = load_config_text("""
+        version: 1
+        fabrics:
+          local_workspace: {}
+        drivers:
+          uhd808:
+            type: orei_uhd808
+            fabric: local_workspace
+        hosts:
+          desktop:
+            fabric: local_workspace
+        video_sources:
+          desktop_dp1:
+            fabric: local_workspace
+            host: desktop
+            driver: uhd808
+            port: 1
+        video_outputs:
+          video_out2:
+            fabric: local_workspace
+            driver: uhd808
+            port: 2
+        displays:
+          primary_4k:
+            fabric: local_workspace
+            output: video_out2
+        workspaces:
+          desktop:
+            fabric: local_workspace
+            video:
+              primary_4k: desktop_dp1
+        """)
+    graph = build_resource_graph(config)
+    drivers = {
+        "uhd808": OreiUhd808VideoDriver(
+            "uhd808",
+            transport=PlanningOnlyTransport(),
+        )
+    }
+
+    plan = plan_workspace(graph, "desktop", drivers, transaction_id="tx_physical_video")
+
+    assert plan.valid
+    assert plan.actions[0].payload == {
+        "source": "desktop_dp1",
+        "destination": "primary_4k",
+        "input_port": 1,
+        "output_port": 2,
+    }
+    assert plan.actions[0].driver_plan.steps == (
+        "send UHD-808 video route command 's in 1 av out 2!'",
+        "query UHD-808 route state with 'r av out 0!'",
+    )
+
+
+def test_transaction_planner_translates_physical_lab_routes_to_hardware_ports() -> None:
+    config = load_config(Path("examples/physical-local.yaml"))
+    graph = build_resource_graph(config)
+    drivers = {
+        "video_matrix_uhd808": OreiUhd808VideoDriver(
+            "video_matrix_uhd808",
+            transport=PlanningOnlyTransport(),
+        ),
+        "usb_matrix_ukm404_a": OreiUkm404UsbDriver(
+            "usb_matrix_ukm404_a",
+            transport=PlanningOnlyTransport(),
+        ),
+        "usb_matrix_ukm404_b": OreiUkm404UsbDriver(
+            "usb_matrix_ukm404_b",
+            transport=PlanningOnlyTransport(),
+        ),
+    }
+
+    plan = plan_workspace(graph, "hybrid_meeting", drivers, transaction_id="tx_physical_lab")
+
+    assert plan.valid
+    assert [action.action_type for action in plan.actions] == [
+        VIDEO_ROUTE_ACTION,
+        VIDEO_ROUTE_ACTION,
+        USB_ROUTE_ACTION,
+        USB_ROUTE_ACTION,
+        USB_ROUTE_ACTION,
+        USB_ROUTE_ACTION,
+        USB_ROUTE_ACTION,
+    ]
+    assert plan.actions[0].payload == {
+        "source": "desktop_display_1",
+        "destination": "primary_4k",
+        "input_port": 1,
+        "output_port": 1,
+    }
+    assert plan.actions[1].payload == {
+        "source": "work_laptop_display_1",
+        "destination": "secondary_2k",
+        "input_port": 3,
+        "output_port": 2,
+    }
+    assert plan.actions[4].payload == {
+        "device": "webcam",
+        "host": "work_laptop",
+        "device_port": 1,
+        "host_port": 2,
+    }
+    assert plan.actions[6].payload == {
+        "device": "fingerprint_reader",
+        "host": "work_laptop",
+        "device_port": 3,
+        "host_port": 2,
+    }
 
 
 def test_transaction_plan_includes_optional_capability_warnings() -> None:

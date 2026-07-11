@@ -15,10 +15,10 @@ from workspace_fabric.core.transactions import (
     TransactionPlanAction,
     TransactionPlanIssue,
 )
-from workspace_fabric.drivers import DriverAction, DriverActionPlan, DriverIssue
+from workspace_fabric.drivers import DriverAction, DriverActionPlan, DriverActionType, DriverIssue
 
-VIDEO_ROUTE_ACTION = "video_route"
-USB_ROUTE_ACTION = "usb_route"
+VIDEO_ROUTE_ACTION = DriverActionType.VIDEO_ROUTE.value
+USB_ROUTE_ACTION = DriverActionType.USB_ROUTE.value
 
 
 class PlanningDriver(CapabilityProvider, Protocol):
@@ -93,6 +93,18 @@ class TransactionPlanner:
                 errors.extend(_graph_error_to_plan_issues(exc))
                 continue
 
+            payload = {
+                "source": resolution.source.id,
+                "destination": resolution.display.id,
+            }
+            if resolution.input_port is not None:
+                payload.update(
+                    {
+                        "input_port": resolution.input_port,
+                        "output_port": resolution.output_port,
+                    }
+                )
+
             self._append_driver_plan(
                 actions,
                 warnings,
@@ -100,10 +112,7 @@ class TransactionPlanner:
                 driver_id=resolution.driver.id,
                 action=DriverAction(
                     action_type=VIDEO_ROUTE_ACTION,
-                    payload={
-                        "source": resolution.source.id,
-                        "destination": resolution.display.id,
-                    },
+                    payload=payload,
                 ),
                 path=route_path,
             )

@@ -184,13 +184,22 @@ video_sources:
   desktop_dp1:
     fabric: local_workspace
     host: desktop
+    driver: uhd808
+    port: 1
     display_name: Desktop DP1
 
   work_laptop_dp1:
     fabric: local_workspace
     host: work_laptop
+    driver: uhd808
+    port: 3
     display_name: Work Laptop DP1
 ```
+
+`driver` and `port` are optional for purely logical or mock configurations, but physical matrix
+configurations should attach each source to the driver instance and input port that receives it.
+The orchestration layer uses this attachment to translate user-facing source IDs into device-local
+ports before invoking a hardware video driver.
 
 ## Video Outputs
 
@@ -310,6 +319,22 @@ workspaces:
       speakers: work_laptop
 ```
 
+## Scenes and Patches
+
+Scenes and patches are part of the accepted Workspace Fabric object model, but
+they are not serialized in the V0 configuration schema.
+
+V0 keeps physical lab configuration focused on typed resources, explicit
+physical attachments, and workspace routes. Scene and patch YAML sections should
+be added through a future schema version with migration support rather than by
+silently extending `version: 1`.
+
+Any future scene or patch implementation must preserve the existing boundary:
+the resource graph and planner resolve workspace-, scene-, or patch-level
+resource names to controller-local ports before drivers are invoked. Drivers
+must not depend on workspace, scene, patch, or deployment-specific resource
+names to operate.
+
 ## Capability Requests
 
 Workspace definitions may request optional capabilities with policies.
@@ -346,6 +371,7 @@ The configuration loader should validate:
 - References to existing resources.
 - Resources belong to valid fabrics.
 - Driver references exist.
+- Physical video source attachments include both driver and port when either is configured.
 - USB devices reference existing USB matrices.
 - USB routes target hosts attached to the owning matrix.
 - Video displays reference valid outputs.
@@ -375,6 +401,9 @@ Secrets management is not part of V0 but should not be precluded.
 ## Example V0 Config
 
 See `examples/local-workspace.yaml`.
+
+For the Phase 3 physical lab V0 schema example, see
+`examples/physical-local.yaml`.
 
 ## Implementation Priority
 

@@ -1,0 +1,438 @@
+# Workspace Fabric Physical Lab Configuration Seed
+#
+# Purpose:
+#   Static configuration seed for Milestone 3.4 physical lab setup.
+#
+# Notes:
+#   - This file is intentionally conservative and focused on Milestone 3.5
+#     end-to-end physical smoke testing.
+#   - Controllers are configured instances of code drivers.
+#   - Resources describe lab objects and endpoints.
+#   - Hardware maps physical matrix ports to resources.
+#   - Workspaces describe reusable operating environments.
+#   - Scenes activate one or more workspaces as a complete requested state.
+#   - Patches are optional partial routing changes applied to the current state.
+#   - Advanced features such as EDID profiles, scaler settings, CEC, scene
+#     snapshots, and UI-based config authoring are deferred.
+#
+# This example implements the Workspace Fabric configuration model.
+#
+# Architecture:
+#   docs/architecture.md
+#   docs/architecture/adr/
+#
+# YAML is the serialized configuration representation. Interactive
+# configuration authoring is planned for a later phase.
+
+schema_version: 0.1
+
+metadata:
+  name: physical-lab
+  description: Initial Workspace Fabric physical lab configuration for UHD-808 and UKM404 smoke testing.
+  environment: lab
+  owner: Big Red
+
+controllers:
+  video_matrix_uhd808:
+    driver: orei-uhd-808
+    transport: telnet
+    host: 172.24.2.192
+    port: 23
+    timeout_seconds: 5
+
+  usb_matrix_ukm404_a:
+    driver: orei-ukm404
+    transport: telnet
+    host: 172.24.2.193
+    port: 23
+    timeout_seconds: 5
+
+  usb_matrix_ukm404_b:
+    driver: orei-ukm404
+    transport: telnet
+    host: 172.24.2.194
+    port: 23
+    timeout_seconds: 5
+
+resources:
+  hosts:
+    desktop:
+      type: workstation
+      label: Personal Desktop
+
+    work_laptop:
+      type: laptop
+      label: Work Laptop
+
+  video_sources:
+    desktop_display_1:
+      type: video_source
+      host: desktop
+      label: Desktop Display Output 1
+
+    desktop_display_2:
+      type: video_source
+      host: desktop
+      label: Desktop Display Output 2
+
+    work_laptop_display_1:
+      type: video_source
+      host: work_laptop
+      label: Work Laptop Display Output 1
+
+    work_laptop_display_2:
+      type: video_source
+      host: work_laptop
+      label: Work Laptop Display Output 2
+
+  displays:
+    primary_display:
+      type: monitor
+      label: Primary 4K Display
+
+    secondary_display:
+      type: monitor
+      label: Secondary 2K Display
+
+    pikvm_capture:
+      type: capture_device
+      label: PiKVM Capture
+
+  usb_hosts:
+    desktop_usb:
+      type: usb_host
+      host: desktop
+      label: Desktop USB Host Connection
+
+    work_laptop_usb:
+      type: usb_host
+      host: work_laptop
+      label: Work Laptop USB Host Connection
+
+  usb_devices:
+    primary_keyboard:
+      type: keyboard
+      label: Primary Keyboard
+
+    primary_mouse:
+      type: mouse
+      label: Primary Mouse
+
+    secondary_keyboard:
+      type: keyboard
+      label: Secondary Keyboard
+
+    secondary_mouse:
+      type: mouse
+      label: Secondary Mouse
+
+    webcam:
+      type: camera
+      label: Webcam
+
+    drop_mic:
+      type: microphone
+      label: Drop Microphone
+
+    fingerprint_reader:
+      type: fingerprint_reader
+      label: Fingerprint Reader
+
+    pikvm_hid:
+      type: hid
+      label: PiKVM Keyboard/Mouse
+
+hardware:
+  video_matrices:
+    uhd808:
+      controller: video_matrix_uhd808
+      model: OREI UHD-808
+      inputs:
+        1: desktop_display_1
+        2: desktop_display_2
+        3: work_laptop_display_1
+        4: work_laptop_display_2
+        5: null
+        6: null
+        7: null
+        8: null
+      outputs:
+        1: primary_display
+        2: secondary_display
+        3: pikvm_capture
+        4: null
+        5: null
+        6: null
+        7: null
+        8: null
+
+  usb_matrices:
+    ukm404_a:
+      controller: usb_matrix_ukm404_a
+      model: OREI UKM404
+      hosts:
+        1: desktop_usb
+        2: work_laptop_usb
+        3: null
+        4: null
+      devices:
+        1: primary_keyboard
+        2: primary_mouse
+        3: secondary_keyboard
+        4: secondary_mouse
+
+    ukm404_b:
+      controller: usb_matrix_ukm404_b
+      model: OREI UKM404
+      hosts:
+        1: desktop_usb
+        2: work_laptop_usb
+        3: null
+        4: null
+      devices:
+        1: webcam
+        2: drop_mic
+        3: fingerprint_reader
+        4: pikvm_hid
+
+workspaces:
+  desktop_primary:
+    label: Desktop Primary Workspace
+    description: Personal desktop routed to both displays with the primary keyboard and mouse.
+    routes:
+      video:
+        - source: desktop_display_1
+          destination: primary_display
+        - source: desktop_display_2
+          destination: secondary_display
+      usb:
+        - device: primary_keyboard
+          host: desktop_usb
+        - device: primary_mouse
+          host: desktop_usb
+
+  desktop_full:
+    label: Desktop Full Workspace
+    description: Personal desktop routed to both displays with primary input devices, camera, microphone, and fingerprint reader.
+    routes:
+      video:
+        - source: desktop_display_1
+          destination: primary_display
+        - source: desktop_display_2
+          destination: secondary_display
+      usb:
+        - device: primary_keyboard
+          host: desktop_usb
+        - device: primary_mouse
+          host: desktop_usb
+        - device: webcam
+          host: desktop_usb
+        - device: drop_mic
+          host: desktop_usb
+        - device: fingerprint_reader
+          host: desktop_usb
+
+  work_laptop_primary:
+    label: Work Laptop Primary Workspace
+    description: Work laptop routed to both displays with the primary keyboard and mouse.
+    routes:
+      video:
+        - source: work_laptop_display_1
+          destination: primary_display
+        - source: work_laptop_display_2
+          destination: secondary_display
+      usb:
+        - device: primary_keyboard
+          host: work_laptop_usb
+        - device: primary_mouse
+          host: work_laptop_usb
+
+  work_laptop_full:
+    label: Work Laptop Full Workspace
+    description: Work laptop routed to both displays with primary input devices, camera, microphone, and fingerprint reader.
+    routes:
+      video:
+        - source: work_laptop_display_1
+          destination: primary_display
+        - source: work_laptop_display_2
+          destination: secondary_display
+      usb:
+        - device: primary_keyboard
+          host: work_laptop_usb
+        - device: primary_mouse
+          host: work_laptop_usb
+        - device: webcam
+          host: work_laptop_usb
+        - device: drop_mic
+          host: work_laptop_usb
+        - device: fingerprint_reader
+          host: work_laptop_usb
+
+  desktop_split_primary:
+    label: Desktop Split Primary Workspace
+    description: Desktop routed to the primary display with the primary keyboard and mouse.
+    routes:
+      video:
+        - source: desktop_display_1
+          destination: primary_display
+      usb:
+        - device: primary_keyboard
+          host: desktop_usb
+        - device: primary_mouse
+          host: desktop_usb
+
+  work_laptop_split_secondary:
+    label: Work Laptop Split Secondary Workspace
+    description: Work laptop routed to the secondary display with the secondary keyboard and mouse.
+    routes:
+      video:
+        - source: work_laptop_display_1
+          destination: secondary_display
+      usb:
+        - device: secondary_keyboard
+          host: work_laptop_usb
+        - device: secondary_mouse
+          host: work_laptop_usb
+
+  pikvm_capture_desktop:
+    label: PiKVM Capture Desktop
+    description: Desktop routed to the PiKVM capture input with PiKVM HID routed back to the desktop.
+    routes:
+      video:
+        - source: desktop_display_1
+          destination: pikvm_capture
+      usb:
+        - device: pikvm_hid
+          host: desktop_usb
+
+  pikvm_capture_work_laptop:
+    label: PiKVM Capture Work Laptop
+    description: Work laptop routed to the PiKVM capture input with PiKVM HID routed back to the work laptop.
+    routes:
+      video:
+        - source: work_laptop_display_1
+          destination: pikvm_capture
+      usb:
+        - device: pikvm_hid
+          host: work_laptop_usb
+
+scenes:
+  smoke_test_desktop:
+    label: Smoke Test - Desktop
+    description: Minimal end-to-end test using the desktop as the active source.
+    workspaces:
+      - desktop_primary
+
+  smoke_test_work_laptop:
+    label: Smoke Test - Work Laptop
+    description: Minimal end-to-end test using the work laptop as the active source.
+    workspaces:
+      - work_laptop_primary
+
+  desktop_full:
+    label: Desktop Full
+    description: Full desktop working mode with camera, microphone, and fingerprint reader.
+    workspaces:
+      - desktop_full
+
+  work_laptop_full:
+    label: Work Laptop Full
+    description: Full work laptop mode with camera, microphone, and fingerprint reader.
+    workspaces:
+      - work_laptop_full
+
+  split_desktop_and_laptop:
+    label: Split Desktop and Laptop
+    description: Desktop on the primary station and work laptop on the secondary station.
+    workspaces:
+      - desktop_split_primary
+      - work_laptop_split_secondary
+
+  smoke_test_pikvm_capture_desktop:
+    label: Smoke Test - PiKVM Capture Desktop
+    description: Route desktop video and HID path through PiKVM for capture validation.
+    workspaces:
+      - pikvm_capture_desktop
+
+  smoke_test_pikvm_capture_work_laptop:
+    label: Smoke Test - PiKVM Capture Work Laptop
+    description: Route work laptop video and HID path through PiKVM for capture validation.
+    workspaces:
+      - pikvm_capture_work_laptop
+
+patches:
+  use_primary_hid_on_desktop:
+    label: Use Primary Keyboard/Mouse on Desktop
+    description: Move only the primary keyboard and mouse to the desktop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: primary_keyboard
+        host: desktop_usb
+      - action: route_usb
+        device: primary_mouse
+        host: desktop_usb
+
+  use_primary_hid_on_work_laptop:
+    label: Use Primary Keyboard/Mouse on Work Laptop
+    description: Move only the primary keyboard and mouse to the work laptop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: primary_keyboard
+        host: work_laptop_usb
+      - action: route_usb
+        device: primary_mouse
+        host: work_laptop_usb
+
+  use_secondary_hid_on_desktop:
+    label: Use Secondary Keyboard/Mouse on Desktop
+    description: Move only the secondary keyboard and mouse to the desktop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: secondary_keyboard
+        host: desktop_usb
+      - action: route_usb
+        device: secondary_mouse
+        host: desktop_usb
+
+  use_secondary_hid_on_work_laptop:
+    label: Use Secondary Keyboard/Mouse on Work Laptop
+    description: Move only the secondary keyboard and mouse to the work laptop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: secondary_keyboard
+        host: work_laptop_usb
+      - action: route_usb
+        device: secondary_mouse
+        host: work_laptop_usb
+
+  add_webcam_to_desktop:
+    label: Add Webcam to Desktop
+    description: Route only the webcam to the desktop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: webcam
+        host: desktop_usb
+
+  add_webcam_to_work_laptop:
+    label: Add Webcam to Work Laptop
+    description: Route only the webcam to the work laptop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: webcam
+        host: work_laptop_usb
+
+  add_drop_mic_to_desktop:
+    label: Add Drop Mic to Desktop
+    description: Route only the drop microphone to the desktop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: drop_mic
+        host: desktop_usb
+
+  add_drop_mic_to_work_laptop:
+    label: Add Drop Mic to Work Laptop
+    description: Route only the drop microphone to the work laptop, leaving other routes unchanged.
+    operations:
+      - action: route_usb
+        device: drop_mic
+        host: work_laptop_usb

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 license = "Apache-2.0"
 authors = [{ name = "Brad Richins" }]
-dependencies = ["PyYAML>=6.0.3"]
+dependencies = ["PyYAML>=6.0.3", "pyserial>=3.5"]
 
 [project.scripts]
 workspace-fabric = "workspace_fabric.cli:main"
