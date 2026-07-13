@@ -19,6 +19,9 @@ Versioning**.
   boundaries.
 - Portable sdist-to-wheel packaging regression coverage for
   `workspace-fabric-core`.
+- Phase 4.7 lifecycle and compatibility regression coverage for installed,
+  removed, upgraded, rolled back, missing, incompatible, broken, and duplicate
+  driver plugins.
 
 ### Changed
 
@@ -28,6 +31,8 @@ Versioning**.
   core configuration models.
 - Core source now lives under `packages/core/src` so the core package is
   self-contained when built from its sdist.
+- Configuration validation now checks configured driver types against installed
+  entry-point discovery before controllers are constructed.
 
 ### Fixed
 
@@ -37,6 +42,8 @@ Versioning**.
 - `workspace-fabric-core` now builds successfully through the normal
   sdist-to-wheel PEP 517 flow without depending on repository-relative
   `../../src` paths.
+- Configured missing, incompatible, duplicate, and broken driver plugins now
+  fail with structured driver lifecycle diagnostics during validation.
 
 ### Removed
 

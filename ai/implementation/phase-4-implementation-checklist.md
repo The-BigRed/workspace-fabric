@@ -1,4 +1,4 @@
-# Phase 4 Implementation Checklist – Milestones 4.2–4.6
+# Phase 4 Implementation Checklist – Milestones 4.2–4.7
 
 This checklist details the exact steps to execute after Milestone 4.1 audit completion.
 
@@ -276,6 +276,34 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 
 ---
 
+## Milestone 4.7 – Lifecycle and Compatibility
+
+### Configured Driver Validation
+- [x] Add configured-driver lifecycle validation against installed entry-point discovery
+- [x] Fail configured missing drivers with structured `missing_driver` diagnostics
+- [x] Fail configured incompatible drivers before controller construction
+- [x] Fail configured duplicate driver types before controller construction
+- [x] Fail configured broken plugin entry points before controller construction
+- [x] Preserve unrelated compatible driver loading when other plugins fail
+
+### Lifecycle Test Matrix
+- [x] Test installed compatible driver discovery and validation
+- [x] Test removing an unused installed driver
+- [x] Test removing a configured driver
+- [x] Test compatible driver package upgrade
+- [x] Test compatible driver package rollback
+- [x] Test incompatible Driver API rejection
+- [x] Test broken unused plugin isolation
+- [x] Test broken configured plugin failure
+- [x] Test duplicate driver type failure
+
+### Documentation
+- [x] Update Phase 4 milestone status
+- [x] Add Milestone 4.7 implementation report
+- [x] Record that Milestone 4.8 physical regression remains deferred
+
+---
+
 ## Physical Regression Testing
 
 ### Before Phase 4.2
@@ -363,6 +391,13 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 - Updated `packages/core/pyproject.toml` to use package-local `src`
 - Updated root `pyproject.toml` development paths to use `packages/core/src`
 - Added `tests/drivers/test_driver_migration.py`
+
+### Updated Files (4.7)
+- `packages/core/src/workspace_fabric/drivers/factory.py`
+- `packages/core/src/workspace_fabric/drivers/__init__.py`
+- `packages/core/src/workspace_fabric/cli/app.py`
+- `tests/drivers/test_driver_lifecycle.py`
+- Phase 4 status and implementation documentation
 
 ---
 

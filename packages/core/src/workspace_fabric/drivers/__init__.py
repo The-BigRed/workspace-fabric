@@ -32,6 +32,7 @@ from workspace_fabric.drivers.catalog import (
 from workspace_fabric.drivers.factory import (
     DRIVER_TYPES,
     ENTRY_POINT_GROUP,
+    DriverConfigurationError,
     DriverDiscoveryIssue,
     DriverDiscoveryResult,
     DuplicateDriverTypeError,
@@ -47,6 +48,8 @@ from workspace_fabric.drivers.factory import (
     get_driver_descriptors,
     get_driver_types,
     is_mock_driver_type,
+    validate_configured_driver_types,
+    validate_driver_configuration,
 )
 
 __all__ = [
@@ -61,6 +64,7 @@ __all__ = [
     "DriverActionStatus",
     "DriverActionType",
     "DriverCapabilityStatus",
+    "DriverConfigurationError",
     "DriverFactory",
     "DriverHealth",
     "DriverHealthStatus",
@@ -93,5 +97,7 @@ __all__ = [
     "get_driver_descriptors",
     "get_driver_types",
     "is_mock_driver_type",
+    "validate_configured_driver_types",
+    "validate_driver_configuration",
     "validate_driver_api_compatibility",
 ]

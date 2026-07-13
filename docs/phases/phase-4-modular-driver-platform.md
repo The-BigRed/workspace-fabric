@@ -282,27 +282,48 @@ Each plugin reports:
 
 ## Milestone 4.7 – Lifecycle and Compatibility
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.7 Lifecycle and Compatibility Report](../../ai/implementation/milestone-4.7-lifecycle-and-compatibility.md)
+
 ### Deliverables
 
 Test:
 
-- Install
-- Unused installed driver
-- Upgrade
-- Rollback
-- Removal
-- Missing configured driver
-- Incompatible Driver API
-- Broken plugin
-- Duplicate driver type
+- ✅ Install
+- ✅ Unused installed driver
+- ✅ Upgrade
+- ✅ Rollback
+- ✅ Removal
+- ✅ Missing configured driver
+- ✅ Incompatible Driver API
+- ✅ Broken plugin
+- ✅ Duplicate driver type
+
+### Completion Details
+
+- Added configured-driver lifecycle validation that checks installed entry-point
+  discovery before constructing driver controllers.
+- Added `DriverConfigurationError` for batch validation failures across
+  configured drivers.
+- `config validate` now fails when a configured driver type is missing,
+  incompatible, duplicated, or represented by a broken plugin entry point.
+- Compatible installed drivers continue to load when unrelated plugins are
+  broken, incompatible, duplicated, unused, or removed.
+- Compatible package upgrades and rollbacks are validated by descriptor
+  compatibility rather than core-version coupling.
+- Added lifecycle regression tests covering install, unused installed driver,
+  upgrade, rollback, removal, missing configured driver, incompatible Driver
+  API, broken plugin, duplicate driver type, and unrelated compatible drivers.
 
 ### Acceptance Criteria
 
-- Removing an unused driver does not affect startup.
-- Removing a configured driver yields `missing_driver` during validation.
-- Compatible upgrades and rollbacks require no core change.
-- Incompatible plugins fail before controller construction.
-- Unrelated compatible drivers continue loading when practical.
+- ✅ Removing an unused driver does not affect startup.
+- ✅ Removing a configured driver yields `missing_driver` during validation.
+- ✅ Compatible upgrades and rollbacks require no core change.
+- ✅ Incompatible plugins fail before controller construction.
+- ✅ Unrelated compatible drivers continue loading when practical.
 
 ## Milestone 4.8 – Physical Regression
 

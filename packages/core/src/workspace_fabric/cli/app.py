@@ -13,7 +13,13 @@ from workspace_fabric.config import ConfigValidationError, WorkspaceFabricConfig
 from workspace_fabric.core.graph import ResourceGraph, ResourceGraphError, build_resource_graph
 from workspace_fabric.core.planner import plan_workspace
 from workspace_fabric.core.transactions import InMemoryTransactionHistory, TransactionExecutor
-from workspace_fabric.drivers import Driver, DriverAction, create_drivers, is_mock_driver_type
+from workspace_fabric.drivers import (
+    Driver,
+    DriverAction,
+    create_drivers,
+    is_mock_driver_type,
+    validate_driver_configuration,
+)
 
 DEFAULT_CONFIG_PATH = Path("examples/local-workspace.yaml")
 DEFAULT_STATE_PATH = Path("runtime/state/workspace-fabric-mock-state.json")
@@ -114,6 +120,7 @@ class WorkspaceFabricRuntime:
 
         config = load_config(self.config_path)
         graph = build_resource_graph(config)
+        validate_driver_configuration(config.drivers.values())
 
         self._config = config
         self._graph = graph

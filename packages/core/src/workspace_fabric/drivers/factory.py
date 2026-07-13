@@ -13,6 +13,7 @@ from workspace_fabric.drivers.base import (
     DriverFactory,
     DriverIssue,
     DriverIssueCategory,
+    DriverValidationResult,
     PluginDescriptor,
     validate_driver_api_compatibility,
 )
@@ -136,6 +137,22 @@ class IncompatibleDriverApiError(ValueError):
         super().__init__(issue.message)
 
 
+class DriverConfigurationError(ValueError):
+    def __init__(self, issues: Sequence[DriverIssue]) -> None:
+        if not issues:
+            raise ValueError("DriverConfigurationError requires at least one issue")
+
+        self.issues = tuple(issues)
+        super().__init__(self._format_message())
+
+    def _format_message(self) -> str:
+        details = "\n".join(
+            f"- [{issue.category}] {issue.path or '$.drivers'}: {issue.message}"
+            for issue in self.issues
+        )
+        return f"Driver configuration validation failed:\n{details}"
+
+
 class _DiscoveredDriverTypes(Mapping[str, DriverFactory]):
     def __getitem__(self, key: str) -> DriverFactory:
         return get_driver_descriptor(key).factory
@@ -247,6 +264,36 @@ def ensure_driver_api_compatible(
         )
 
 
+def validate_configured_driver_types(
+    configs: Iterable[DriverConfig],
+    entry_points: Iterable[Any] | None = None,
+    *,
+    accepted_version: ApiCompatibilityVersion = CORE_DRIVER_API_VERSION,
+) -> DriverValidationResult:
+    discovery = discover_drivers(entry_points, accepted_version=accepted_version)
+    errors = tuple(
+        issue
+        for issue in (_configured_driver_issue(config, discovery) for config in configs)
+        if issue is not None
+    )
+    return DriverValidationResult(valid=not errors, errors=errors)
+
+
+def validate_driver_configuration(
+    configs: Iterable[DriverConfig],
+    entry_points: Iterable[Any] | None = None,
+    *,
+    accepted_version: ApiCompatibilityVersion = CORE_DRIVER_API_VERSION,
+) -> None:
+    validation = validate_configured_driver_types(
+        configs,
+        entry_points,
+        accepted_version=accepted_version,
+    )
+    if not validation.valid:
+        raise DriverConfigurationError(validation.errors)
+
+
 def create_driver(config: DriverConfig) -> Driver:
     discovery = discover_drivers()
     descriptor = _get_driver_descriptor(config.type, discovery)
@@ -254,7 +301,16 @@ def create_driver(config: DriverConfig) -> Driver:
 
 
 def create_drivers(configs: Iterable[DriverConfig]) -> dict[str, Driver]:
+    configs = tuple(configs)
     discovery = discover_drivers()
+    errors = tuple(
+        issue
+        for issue in (_configured_driver_issue(config, discovery) for config in configs)
+        if issue is not None
+    )
+    if errors:
+        raise DriverConfigurationError(errors)
+
     return {
         config.id: _get_driver_descriptor(config.type, discovery).factory(config)
         for config in configs
@@ -305,6 +361,60 @@ def _first_issue(
     for issue in issues:
         if issue.issue.category == category:
             return issue
+    return None
+
+
+def _configured_driver_issue(
+    config: DriverConfig,
+    discovery: DriverDiscoveryResult,
+) -> DriverIssue | None:
+    if config.type in discovery.drivers:
+        return None
+
+    path = f"$.drivers.{config.id}.type"
+    related_issue = _configured_related_issue(config.type, discovery)
+    if related_issue is not None:
+        return DriverIssue(
+            category=related_issue.issue.category,
+            message=related_issue.issue.message,
+            path=path,
+        )
+
+    available = ", ".join(discovery.available_types) if discovery.available_types else "none"
+    suggested_install_command = _suggest_install_command(config.type)
+    return DriverIssue(
+        category=DriverIssueCategory.MISSING_DRIVER.value,
+        message=(
+            f"Configured driver {config.id!r} uses unavailable driver type {config.type!r}; "
+            f"available driver types: {available}. "
+            f"Suggested install: {suggested_install_command}"
+        ),
+        path=path,
+    )
+
+
+def _configured_related_issue(
+    driver_type: str,
+    discovery: DriverDiscoveryResult,
+) -> DriverDiscoveryIssue | None:
+    related_issues = discovery.issues_for_driver_type(driver_type)
+    for category in (
+        DriverIssueCategory.INCOMPATIBLE_DRIVER_API.value,
+        DriverIssueCategory.DUPLICATE_DRIVER_TYPE.value,
+        DriverIssueCategory.PLUGIN_LOAD_FAILED.value,
+    ):
+        issue = _first_issue(related_issues, category)
+        if issue is not None:
+            return issue
+
+    for issue in discovery.issues:
+        if (
+            issue.issue.category == DriverIssueCategory.PLUGIN_LOAD_FAILED.value
+            and issue.driver_type is None
+            and issue.entry_point_name == driver_type
+        ):
+            return issue
+
     return None
 
 
