@@ -2,7 +2,7 @@
 
 ## Status
 
-Current
+Complete
 
 ## Purpose
 
@@ -327,18 +327,36 @@ Test:
 
 ## Milestone 4.8 – Physical Regression
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.8 Physical Regression Report](../../ai/implementation/milestone-4.8-physical-regression.md)
+
 ### Deliverables
 
-Repeat the Phase 3 validation sequence against independently installed OREI
+✅ Repeat the Phase 3 validation sequence against independently installed OREI
 driver packages.
+
+### Completion Details
+
+- Added installed-wheel physical regression coverage that builds the core,
+  driver API, UHD-808, and UKM404 packages before installing them into a clean
+  temporary virtual environment.
+- Replayed the Phase 3 reference route sequence for `desktop`, `work`, and
+  `hybrid_meeting` against the physical-lab configuration using scripted OREI
+  transports from independently installed driver packages.
+- Verified UHD-808 and UKM404 observed state after each workspace transition.
+- Verified structured hardware rejection behavior remains intact.
+- Verified the core wheel contains only generic driver infrastructure and no
+  migrated mock, UHD-808, or UKM404 implementation modules.
 
 ### Acceptance Criteria
 
-- `desktop`, `work`, and `hybrid_meeting` pass.
-- UHD-808 state remains observed.
-- UKM404 state remains observed.
-- Structured failure behavior remains intact.
-- No vendor-specific imports remain in the core distribution.
+- ✅ `desktop`, `work`, and `hybrid_meeting` pass.
+- ✅ UHD-808 state remains observed.
+- ✅ UKM404 state remains observed.
+- ✅ Structured failure behavior remains intact.
+- ✅ No vendor-specific imports remain in the core distribution.
 
 ## Phase Completion Criteria
 

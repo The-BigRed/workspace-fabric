@@ -1,4 +1,4 @@
-# Phase 4 Implementation Checklist – Milestones 4.2–4.7
+# Phase 4 Implementation Checklist – Milestones 4.2–4.8
 
 This checklist details the exact steps to execute after Milestone 4.1 audit completion.
 
@@ -300,7 +300,40 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 ### Documentation
 - [x] Update Phase 4 milestone status
 - [x] Add Milestone 4.7 implementation report
-- [x] Record that Milestone 4.8 physical regression remains deferred
+- [x] Record that Milestone 4.8 physical regression remained deferred until
+  the physical regression milestone
+
+---
+
+## Milestone 4.8 – Physical Regression
+
+### Installed Driver Regression
+- [x] Build driver API, UHD-808, UKM404, and core wheels before validation
+- [x] Install independently built wheels into a clean temporary virtual
+  environment
+- [x] Import installed `workspace_fabric` and OREI driver packages from the
+  temporary virtual environment
+- [x] Discover installed OREI driver descriptors through entry points
+- [x] Confirm mock drivers are absent from the installed OREI-only environment
+
+### Physical Route Sequence
+- [x] Replay the `desktop` workspace route sequence
+- [x] Replay the `work` workspace route sequence
+- [x] Replay the `hybrid_meeting` workspace route sequence
+- [x] Verify UHD-808 observed route state after each workspace transition
+- [x] Verify UKM404 observed route state after each workspace transition
+
+### Safety and Boundaries
+- [x] Verify structured hardware rejection behavior remains intact
+- [x] Inspect the core wheel for generic driver infrastructure
+- [x] Confirm migrated mock, UHD-808, and UKM404 implementations remain absent
+  from the core wheel
+- [x] Confirm the core package contains no vendor driver implementation imports
+
+### Documentation
+- [x] Update Phase 4 milestone status
+- [x] Add Milestone 4.8 implementation report
+- [x] Record Phase 4 physical regression completion
 
 ---
 
@@ -311,12 +344,13 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 - [ ] Document baseline behavior
 - [ ] Record any pre-existing issues
 
-### After Phase 4.5
-- [ ] Run physical smoke tests with all packages installed
-- [ ] Verify UHD-808 routing still works
-- [ ] Verify UKM-404 routing still works
-- [ ] Verify mock drivers still work
-- [ ] Compare results to baseline (should be identical)
+### Milestone 4.8
+- [x] Run physical regression tests with OREI packages independently installed
+- [x] Verify UHD-808 routing still works
+- [x] Verify UKM-404 routing still works
+- [x] Verify structured failure behavior still works
+- [x] Compare results to Phase 3 expectations for `desktop`, `work`, and
+  `hybrid_meeting`
 
 ---
 
@@ -397,6 +431,11 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 - `packages/core/src/workspace_fabric/drivers/__init__.py`
 - `packages/core/src/workspace_fabric/cli/app.py`
 - `tests/drivers/test_driver_lifecycle.py`
+- Phase 4 status and implementation documentation
+
+### Updated Files (4.8)
+- `tests/physical/test_physical_smoke.py`
+- `ai/implementation/milestone-4.8-physical-regression.md`
 - Phase 4 status and implementation documentation
 
 ---

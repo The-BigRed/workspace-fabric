@@ -22,6 +22,9 @@ Versioning**.
 - Phase 4.7 lifecycle and compatibility regression coverage for installed,
   removed, upgraded, rolled back, missing, incompatible, broken, and duplicate
   driver plugins.
+- Phase 4.8 installed-wheel physical regression coverage for the reference
+  `desktop`, `work`, and `hybrid_meeting` workspace transitions using
+  independently installed UHD-808 and UKM404 driver packages.
 
 ### Changed
 
@@ -33,6 +36,9 @@ Versioning**.
   self-contained when built from its sdist.
 - Configuration validation now checks configured driver types against installed
   entry-point discovery before controllers are constructed.
+- Physical regression validation now exercises installed OREI driver packages
+  and verifies observed UHD-808 and UKM404 state without reintroducing vendor
+  implementations into the core package.
 
 ### Fixed
 
