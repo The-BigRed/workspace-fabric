@@ -25,6 +25,9 @@ class DriverIssueCategory(StrEnum):
     PARTIAL_APPLY = "partial_apply"
     AUTHENTICATION_FAILED = "authentication_failed"
     AUTHORIZATION_FAILED = "authorization_failed"
+    MISSING_DRIVER = "missing_driver"
+    INCOMPATIBLE_DRIVER_API = "incompatible_driver_api"
+    PLUGIN_LOAD_FAILED = "plugin_load_failed"
     MOCK_FAILURE = "mock_failure"
     UNKNOWN_ERROR = "unknown_error"
 

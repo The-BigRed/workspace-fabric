@@ -210,3 +210,12 @@ specified by the active package `pyproject.toml` files.
 - Preserve backward compatibility whenever practical.
 - Keep vendor-specific behavior inside driver packages.
 - Keep orchestration policy inside the core.
+
+## Command Execution
+
+Coding agents are expected to execute routine development commands directly within the repository workspace, including Python, pytest, Black, Ruff, package builds, and temporary virtual-environment validation.
+
+Use the repository virtual environment when present:
+
+```text
+.\.venv\Scripts\python.exe

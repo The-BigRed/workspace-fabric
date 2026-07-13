@@ -5,6 +5,11 @@ from workspace_fabric_driver_mock.factory import (
     create_mock_driver,
     create_mock_drivers,
 )
+from workspace_fabric_driver_mock.plugin import (
+    get_mock_usb_plugin_descriptor,
+    get_mock_video_plugin_descriptor,
+    get_plugin_descriptors,
+)
 from workspace_fabric_driver_mock.usb_matrix import (
     USB_ROUTE_ACTION,
     USB_ROUTING_CAPABILITY,
@@ -28,4 +33,7 @@ __all__ = [
     "VIDEO_ROUTING_CAPABILITY",
     "create_mock_driver",
     "create_mock_drivers",
+    "get_mock_usb_plugin_descriptor",
+    "get_mock_video_plugin_descriptor",
+    "get_plugin_descriptors",
 ]

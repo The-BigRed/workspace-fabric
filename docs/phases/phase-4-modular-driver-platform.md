@@ -122,6 +122,11 @@ packages/
 
 ## Milestone 4.3 – Versioned Driver API
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.3 Versioned Driver API Report](../../ai/implementation/milestone-4.3-versioned-driver-api.md)
+
 ### Deliverables
 
 Extract shared portable contracts into `workspace-fabric-driver-api`:
@@ -133,6 +138,18 @@ Extract shared portable contracts into `workspace-fabric-driver-api`:
 - Structured issue categories
 - Plugin descriptor
 - Compatibility version
+
+### Completion Details
+
+- Added `ApiCompatibilityVersion`, `PluginDescriptor`, `DriverPlugin`, and
+  compatibility validation to the Driver API package.
+- Added driver package `plugin.py` modules that declare descriptor metadata and
+  supported Driver API version.
+- Re-exported the shared Driver API through the legacy driver base module while
+  migration continues.
+- Updated the temporary root factory to validate Driver API compatibility
+  before constructing a driver.
+- Preserved current driver type identifiers and existing route action payloads.
 
 ### Acceptance Criteria
 

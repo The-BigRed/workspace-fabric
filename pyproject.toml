@@ -31,13 +31,30 @@ line-length = 100
 target-version = ["py314"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [
+    "src",
+    "packages/driver-api/src",
+    "packages/driver-mock/src",
+    "packages/driver-orei-uhd808/src",
+    "packages/driver-orei-ukm404/src",
+]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-src = ["src", "tests"]
+src = [
+    "src",
+    "tests",
+    "packages/driver-api/src",
+    "packages/driver-api/tests",
+    "packages/driver-mock/src",
+    "packages/driver-mock/tests",
+    "packages/driver-orei-uhd808/src",
+    "packages/driver-orei-uhd808/tests",
+    "packages/driver-orei-ukm404/src",
+    "packages/driver-orei-ukm404/tests",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

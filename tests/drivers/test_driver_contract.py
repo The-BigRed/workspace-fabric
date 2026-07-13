@@ -33,6 +33,9 @@ def test_phase_3_driver_contract_defines_shared_error_categories() -> None:
         "partial_apply",
         "authentication_failed",
         "authorization_failed",
+        "missing_driver",
+        "incompatible_driver_api",
+        "plugin_load_failed",
         "mock_failure",
         "unknown_error",
     } <= {category.value for category in DriverIssueCategory}
