@@ -28,8 +28,18 @@ def get_plugin_descriptor() -> PluginDescriptor:
             }
         },
         port_metadata={
-            "inputs": {"count": 8, "kind": "hdmi"},
-            "outputs": {"count": 8, "kind": "hdmi"},
+            "inputs": {
+                "count": 8,
+                "kind": "hdmi",
+                "direction": "sink",
+                "accepts": ("video_source",),
+            },
+            "outputs": {
+                "count": 8,
+                "kind": "hdmi",
+                "direction": "source",
+                "accepts": ("display", "video_output"),
+            },
         },
         capability_metadata={
             VIDEO_ROUTING_CAPABILITY: DriverCapabilityStatus.SUPPORTED.value,

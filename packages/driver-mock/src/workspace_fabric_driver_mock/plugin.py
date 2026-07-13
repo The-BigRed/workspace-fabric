@@ -26,6 +26,18 @@ def get_mock_video_plugin_descriptor() -> PluginDescriptor:
         supported_driver_api=DRIVER_API_COMPATIBILITY_VERSION,
         factory=MockVideoMatrixDriver.from_config,
         configuration_schema={"connection": {"required": ()}},
+        port_metadata={
+            "inputs": {
+                "dynamic": True,
+                "kind": "virtual_video",
+                "accepts": ("video_source",),
+            },
+            "outputs": {
+                "dynamic": True,
+                "kind": "virtual_video",
+                "accepts": ("display", "video_output"),
+            },
+        },
         capability_metadata={
             VIDEO_ROUTING_CAPABILITY: DriverCapabilityStatus.SUPPORTED.value,
             "route_query": DriverCapabilityStatus.SUPPORTED.value,
@@ -43,6 +55,18 @@ def get_mock_usb_plugin_descriptor() -> PluginDescriptor:
         supported_driver_api=DRIVER_API_COMPATIBILITY_VERSION,
         factory=MockUsbMatrixDriver.from_config,
         configuration_schema={"connection": {"required": ()}},
+        port_metadata={
+            "device_ports": {
+                "dynamic": True,
+                "kind": "virtual_usb",
+                "accepts": ("usb_device",),
+            },
+            "host_ports": {
+                "dynamic": True,
+                "kind": "virtual_usb",
+                "accepts": ("host",),
+            },
+        },
         capability_metadata={
             USB_ROUTING_CAPABILITY: DriverCapabilityStatus.SUPPORTED.value,
             "route_query": DriverCapabilityStatus.SUPPORTED.value,

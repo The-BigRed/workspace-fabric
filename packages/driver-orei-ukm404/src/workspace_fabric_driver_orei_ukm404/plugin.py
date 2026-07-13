@@ -28,8 +28,18 @@ def get_plugin_descriptor() -> PluginDescriptor:
             }
         },
         port_metadata={
-            "device_ports": {"count": 4, "kind": "usb"},
-            "host_ports": {"count": 4, "kind": "usb"},
+            "device_ports": {
+                "count": 4,
+                "kind": "usb",
+                "direction": "device",
+                "accepts": ("usb_device",),
+            },
+            "host_ports": {
+                "count": 4,
+                "kind": "usb",
+                "direction": "host",
+                "accepts": ("host",),
+            },
         },
         capability_metadata={
             USB_ROUTING_CAPABILITY: DriverCapabilityStatus.SUPPORTED.value,

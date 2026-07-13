@@ -7,6 +7,21 @@ Versioning**.
 
 ## [Unreleased]
 
+### Added
+
+- Phase 4.5 driver metadata catalog for listing available and unavailable
+  installed driver plugins with structured diagnostics.
+- Serializable descriptor metadata for mock, UHD-808, and UKM404 driver
+  packages covering configuration requirements, ports, and capabilities.
+- Isolated wheel regression coverage for the `workspace-fabric-core` driver
+  catalog package contents and installed entry-point discovery.
+
+### Fixed
+
+- `workspace-fabric-core` wheels now package the real `workspace_fabric`
+  implementation, including `workspace_fabric.drivers`, instead of the stale
+  Phase 4.2 scaffold-only package.
+
 ### Planned
 
 Development toward Release 1.0 continues with:

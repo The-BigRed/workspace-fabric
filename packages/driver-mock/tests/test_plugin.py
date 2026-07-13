@@ -17,4 +17,7 @@ def test_mock_package_declares_both_driver_descriptors() -> None:
         descriptor.supported_driver_api == DRIVER_API_COMPATIBILITY_VERSION
         for descriptor in descriptors
     )
+    assert all(descriptor.configuration_schema for descriptor in descriptors)
+    assert all(descriptor.port_metadata for descriptor in descriptors)
+    assert all(descriptor.capability_metadata for descriptor in descriptors)
     assert all(callable(descriptor.factory) for descriptor in descriptors)

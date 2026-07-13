@@ -35,8 +35,22 @@ def get_plugin_descriptor() -> PluginDescriptor:
         driver_version="1.0.0",
         supported_driver_api=DRIVER_API_COMPATIBILITY_VERSION,
         factory=ExampleDriver.from_config,
-    )
+)
 ```
+
+## Driver Metadata
+
+Driver descriptors should also include metadata that future onboarding and
+configuration surfaces can consume without importing vendor-specific code:
+
+- `configuration_schema`
+- `port_metadata`
+- `capability_metadata`
+- `package_name`
+- `is_mock`
+
+The `factory` remains part of the descriptor for controller construction, but
+catalog projections should expose only serializable metadata to public APIs.
 
 ## Entry-Point Registration
 

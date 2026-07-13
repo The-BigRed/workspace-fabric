@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "workspace-fabric-core"
 version = "0.3.0"
-description = "Workspace Fabric Core - Orchestration engine (Phase 4.2 scaffold - CLI not yet included)"
+description = "Workspace Fabric Core - Orchestration engine"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "Apache-2.0"
@@ -27,16 +27,20 @@ line-length = 100
 target-version = ["py314"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["../../src"]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-src = ["src", "tests"]
+src = ["../../src", "tests"]
+
+[tool.setuptools]
+package-dir = {"" = "../../src"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["../../src"]
+include = ["workspace_fabric*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

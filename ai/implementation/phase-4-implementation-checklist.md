@@ -207,36 +207,39 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 
 ---
 
-## Milestone 4.5 – CLI Compatibility
+## Milestone 4.5 – Driver Metadata and Catalog
 
-### CLI Updates
-- [ ] Update `src/workspace_fabric/cli/app.py`:
-  - Replace `from workspace_fabric.drivers import is_mock_driver_type`
-  - Call `is_mock_driver_type(config.type)` (factory now implements this)
-- [ ] Verify transaction replay still works with discovered drivers
-- [ ] Add tests for mock driver detection during CLI startup
+### Driver Descriptor Metadata
+- [x] Ensure each plugin descriptor reports a stable driver type
+- [x] Ensure each plugin descriptor reports a display name
+- [x] Ensure each plugin descriptor reports a driver package version
+- [x] Ensure each plugin descriptor reports supported Driver API compatibility
+- [x] Ensure each plugin descriptor reports a factory
+- [x] Ensure each plugin descriptor reports configuration requirements
+- [x] Ensure each plugin descriptor reports port metadata
+- [x] Ensure each plugin descriptor reports capability metadata
 
-### Configuration Validation
-- [ ] Update config validation to check for missing drivers
-- [ ] Add pre-flight check: all configured drivers must be discovered
-- [ ] Report missing drivers with helpful error message
-
-### State Replay
-- [ ] Verify mock drivers can replay transactions after separate packaging
-- [ ] Add tests for state replay with discovered drivers
-- [ ] Add tests for replay isolation between drivers
+### Catalog Projection
+- [x] Add a core-facing driver catalog built from entry-point discovery
+- [x] List compatible installed drivers as available catalog entries
+- [x] List incompatible drivers as unavailable entries with diagnostics
+- [x] List duplicate driver types as unavailable entries with diagnostics
+- [x] Preserve plugin-load failures as catalog-level diagnostics
+- [x] Provide a serializable catalog dump for future Phase 5 APIs
 
 ### Testing
-- [ ] Full CLI smoke test with all drivers
-- [ ] CLI test with missing driver (should fail gracefully)
-- [ ] CLI test with incompatible driver (should fail gracefully)
-- [ ] State replay test with mock drivers
-- [ ] Transaction playback test
+- [x] Add tests for compatible catalog metadata
+- [x] Add tests for incompatible Driver API catalog entries
+- [x] Add tests for duplicate driver type catalog entries
+- [x] Add tests for plugin-load failure catalog diagnostics
+- [x] Add package tests for descriptor metadata
+- [x] Add isolated-wheel regression coverage for core catalog packaging
 
 ### Documentation
-- [ ] Update CLI documentation
-- [ ] Document deployment requirements
-- [ ] Document troubleshooting for missing drivers
+- [x] Update Phase 4 milestone status
+- [x] Add Milestone 4.5 implementation report
+- [x] Document descriptor metadata expectations
+- [x] Document core wheel packaging defect and fix
 
 ---
 
@@ -312,7 +315,10 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 - All driver `pyproject.toml` files (add entry points)
 
 ### Updated Files (4.5)
-- `src/workspace_fabric/cli/app.py` (minor changes)
+- `src/workspace_fabric/drivers/catalog.py`
+- Driver package `plugin.py` metadata descriptors
+- Driver catalog and package plugin tests
+- Phase 4 status and implementation documentation
 
 ---
 

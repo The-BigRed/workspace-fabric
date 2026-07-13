@@ -193,25 +193,48 @@ Extract shared portable contracts into `workspace-fabric-driver-api`:
 
 ## Milestone 4.5 – Driver Metadata and Catalog
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.5 Driver Metadata and Catalog Report](../../ai/implementation/milestone-4.5-driver-metadata-and-catalog.md)
+
 ### Deliverables
 
 Each plugin reports:
 
-- Driver type
-- Display name
-- Driver package version
-- Supported Driver API version
-- Factory
-- Configuration requirements
-- Port metadata
-- Capability metadata
+- ✅ Driver type
+- ✅ Display name
+- ✅ Driver package version
+- ✅ Supported Driver API version
+- ✅ Factory
+- ✅ Configuration requirements
+- ✅ Port metadata
+- ✅ Capability metadata
+
+### Completion Details
+
+- Added a core driver catalog projection built from installed entry-point
+  discovery results.
+- Catalog entries include package metadata, Driver API compatibility,
+  configuration requirements, port metadata, capability metadata, mock status,
+  availability, and structured diagnostics.
+- Compatible installed drivers are listed as available.
+- Incompatible and duplicate driver types are listed as unavailable with
+  diagnostics.
+- Plugin-load failures remain isolated as catalog-level diagnostics without
+  blocking unrelated compatible drivers.
+- Mock, UHD-808, and UKM404 descriptors now all include configuration,
+  port, and capability metadata suitable for Phase 5 onboarding surfaces.
+- Fixed the core wheel packaging path so `workspace-fabric-core` installs the
+  real `workspace_fabric.drivers` catalog implementation, not the Phase 4.2
+  scaffold-only package.
 
 ### Acceptance Criteria
 
-- Core can list all compatible installed drivers.
-- Incompatible plugins are listed as unavailable with diagnostics or rejected
+- ✅ Core can list all compatible installed drivers.
+- ✅ Incompatible plugins are listed as unavailable with diagnostics or rejected
   according to the accepted API design.
-- Catalog data is sufficient for Phase 5 controller onboarding.
+- ✅ Catalog data is sufficient for Phase 5 controller onboarding.
 
 ## Milestone 4.6 – Driver Migration
 

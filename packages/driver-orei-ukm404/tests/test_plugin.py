@@ -13,5 +13,11 @@ def test_ukm404_plugin_descriptor_declares_stable_type_and_api_version() -> None
     assert descriptor.driver_version == "1.0.0"
     assert descriptor.supported_driver_api == DRIVER_API_COMPATIBILITY_VERSION
     assert descriptor.port_metadata["device_ports"]["count"] == 4
+    assert descriptor.port_metadata["host_ports"]["accepts"] == ("host",)
     assert descriptor.capability_metadata["usb_routing"] == "supported"
+    assert descriptor.configuration_schema["connection"]["transports"] == (
+        "tcp",
+        "telnet",
+        "serial",
+    )
     assert callable(descriptor.factory)
