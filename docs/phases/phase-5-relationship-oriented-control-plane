@@ -1,0 +1,357 @@
+# Phase 5 – Relationship-Oriented Control Plane
+
+## Objective
+
+Implement the relationship-oriented orchestration model defined by **ADR-0005: Driver Metadata and Endpoint Introspection** and **ADR-0009: Endpoint Relationships and Route Orchestration**.
+
+This phase evolves Workspace Fabric from a point-to-point routing engine into a relationship-oriented control plane capable of reasoning about endpoint relationships independently of individual hardware implementations.
+
+The transaction planner becomes responsible for interpreting relationship intent, validating endpoint compatibility, reconciling desired state, and producing deterministic driver operations while preserving the architectural boundary between the Workspace Fabric core and individual drivers.
+
+This phase intentionally establishes the architectural foundation required for future public APIs, user interfaces, and advanced hardware capabilities without implementing domain-specific behavior such as EDID management, scaling, or DSP policy.
+
+---
+
+# Architectural Goals
+
+Upon completion of this phase, Workspace Fabric shall:
+
+* Model endpoint relationships as first-class architectural concepts.
+* Consume endpoint metadata supplied by drivers.
+* Support endpoint constraint validation.
+* Support additive, exclusive, and reconciled relationship semantics.
+* Support one-to-one, one-to-many, and many-to-one logical relationships.
+* Preserve deterministic transaction planning.
+* Preserve the controller/driver boundary.
+* Provide a stable internal relationship model suitable for future REST APIs.
+* Remain hardware-independent.
+
+---
+
+# Milestone 5.1 – Endpoint Metadata
+
+## Objective
+
+Expand the Driver API to expose endpoint metadata required by relationship-oriented planning.
+
+## Deliverables
+
+* Expand endpoint metadata.
+* Implement endpoint constraint metadata.
+* Support endpoint direction.
+* Support accepted endpoint types.
+* Support minimum relationship cardinality.
+* Support maximum relationship cardinality.
+* Support disconnect capability reporting.
+* Support required-assignment reporting.
+* Expand metadata validation.
+* Update mock drivers.
+* Maintain functional compatibility throughout the repository.
+
+## Completion Criteria
+
+* Drivers expose sufficient endpoint metadata for relationship planning.
+* Endpoint metadata validates successfully.
+* Mock drivers implement the updated metadata contract.
+* Existing routing behavior continues operating.
+
+---
+
+# Milestone 5.2 – Relationship Model
+
+## Objective
+
+Introduce relationship-oriented planning objects independent of driver execution.
+
+## Deliverables
+
+Implement core concepts including:
+
+* Relationship
+* Relationship Intent
+* Relationship Group
+* Managed Scope
+
+Extend the internal resource graph to represent relationships independently of native controller operations.
+
+## Completion Criteria
+
+* Relationship objects exist independently of transaction execution.
+* Resource graph supports logical relationships.
+* Existing planner functionality remains operational.
+
+---
+
+# Milestone 5.3 – Relationship Planner
+
+## Objective
+
+Extend the transaction planner to reason about endpoint relationships rather than individual routing commands.
+
+## Deliverables
+
+Implement planning support for:
+
+* Additive routing
+* Exclusive routing
+* Reconciliation
+* Disconnect intent
+* Endpoint compatibility validation
+* Endpoint constraint validation
+* Relationship conflict detection
+
+Continue generating existing controller-native routing operations.
+
+## Completion Criteria
+
+* Relationship intent is translated into deterministic driver actions.
+* Existing routing workflows continue operating.
+* Planner behavior conforms to ADR-0009.
+
+---
+
+# Milestone 5.4 – Driver Integration
+
+## Objective
+
+Update existing drivers to participate fully in relationship-oriented planning.
+
+## Deliverables
+
+Update included drivers to expose:
+
+* Endpoint metadata
+* Relationship constraints
+* Disconnect capability reporting
+* Planner-required capability metadata
+
+This milestone intentionally introduces no new hardware functionality.
+
+## Completion Criteria
+
+* Existing drivers expose the required metadata.
+* Existing hardware behavior remains unchanged.
+* Mock and physical drivers produce equivalent planning behavior.
+
+---
+
+# Milestone 5.5 – Relationship Groups
+
+## Objective
+
+Support logical relationship groups within the planner.
+
+## Deliverables
+
+Implement support for:
+
+* One-to-one relationships
+* One-to-many relationships
+* Many-to-one relationships
+
+Relationship groups remain logical planning constructs.
+
+Drivers continue receiving native controller operations.
+
+## Completion Criteria
+
+* Planner supports grouped relationship intent.
+* Existing Driver API execution model remains valid.
+* Grouped relationships decompose into deterministic controller operations.
+
+---
+
+# Milestone 5.6 – Planner Validation
+
+## Objective
+
+Expand planner validation to fully understand endpoint relationships.
+
+## Deliverables
+
+Validate:
+
+* Cardinality
+* Endpoint compatibility
+* Endpoint constraints
+* Relationship conflicts
+* Managed scope reconciliation
+* Relationship intent
+* Unsupported capabilities
+* Unknown capabilities
+
+Planner validation shall produce structured outcomes describing supported, unsupported, unknown, and non-executable requests.
+
+## Completion Criteria
+
+* Invalid relationship requests are detected before execution.
+* Validation produces deterministic, structured results.
+* Planner accurately reports unsupported or unknown capabilities.
+
+---
+
+# Milestone 5.7 – Regression and Physical Validation
+
+## Objective
+
+Verify complete integration of the relationship-oriented control plane.
+
+## Deliverables
+
+Validate:
+
+* Existing example configurations
+* Existing CLI workflows
+* Existing mock drivers
+* UHD-808 reference driver
+* UKM-404 reference driver
+* Existing physical routing workflows
+* Updated Driver API
+* Updated planner behavior
+
+Confirm complete functional operation at the end of the phase.
+
+## Completion Criteria
+
+* Existing supported functionality continues operating.
+* Mock and physical implementations remain consistent.
+* Documentation, tests, and implementation agree.
+
+---
+
+# Phase Deliverables
+
+Upon completion, Workspace Fabric shall provide:
+
+* Relationship-oriented transaction planning
+* Endpoint-aware planning
+* Endpoint metadata consumed by the planner
+* Relationship intent modeling
+* Relationship groups
+* Managed scope reconciliation
+* Endpoint constraint validation
+* Additive routing
+* Exclusive routing
+* Structured planner validation
+* Stable internal relationship model
+* Stable planner semantics suitable for future public APIs
+
+---
+
+# Deferred Work
+
+The following capabilities intentionally remain outside the scope of this phase.
+
+## Domain-Specific Policy
+
+Examples include:
+
+* EDID management
+* Video scaling
+* CEC
+* Audio DSP policies
+* Future media-specific reconciliation
+
+These capabilities will be implemented by future driver enhancements using the relationship framework introduced during this phase.
+
+---
+
+## Public Interfaces
+
+Deferred items include:
+
+* REST API relationship endpoints
+* Reference Web UI updates
+* External automation enhancements
+
+These capabilities will expose the relationship model established during this phase rather than defining it.
+
+---
+
+## Advanced Hardware Features
+
+Future hardware-specific capabilities remain separate implementation efforts.
+
+Examples include:
+
+* Advanced UHD-808 capabilities
+* Additional matrix features
+* DSP integrations
+* Future controller classes
+
+---
+
+# Versioning
+
+Workspace Fabric remains in pre-1.0 development.
+
+Driver API and internal implementation changes may occur when necessary to align the implementation with accepted architectural decisions.
+
+Package versions shall be updated consistently to reflect any Driver API or core contract changes introduced during this phase.
+
+---
+
+# Configuration Compatibility
+
+Configuration compatibility shall be evaluated as part of this phase.
+
+Where configuration changes become necessary to support the accepted architecture:
+
+* Existing examples shall be updated.
+* Documentation shall be updated.
+* Migration requirements shall be documented.
+
+Temporary compatibility mechanisms may be used during implementation but shall not remain unless they provide clear long-term value.
+
+---
+
+# Pre-1.0 Compatibility and Release Integrity
+
+Workspace Fabric remains in pre-1.0 development during this phase.
+
+Historical pre-release implementations do not constitute permanent compatibility commitments.
+
+Architectural correctness takes precedence over preserving obsolete internal interfaces.
+
+However, every completed phase and point release shall leave the repository in a coherent, fully integrated, and operational state.
+
+By completion of this phase:
+
+* Core components and included drivers shall use one congruent relationship contract.
+* Existing supported functionality shall remain operational.
+* Mock and physical reference drivers shall be updated together.
+* Configuration examples, tests, CLI behavior, and documentation shall reflect the implemented architecture.
+* Transitional interfaces may be removed once all in-repository consumers have migrated.
+* No release shall depend upon partially completed architectural migrations.
+
+---
+
+# Phase 6 Handoff
+
+Completion of this phase establishes the internal contracts that become the foundation for the public interfaces introduced during Phase 6.
+
+The internal relationship model shall be sufficiently stable that future API work focuses on exposing the model rather than redesigning it.
+
+Examples include:
+
+* Relationship Intent
+* Relationship
+* Relationship Group
+* Managed Scope
+* Endpoint Metadata
+* Endpoint Constraints
+
+---
+
+# Success Criteria
+
+Phase 5 is complete when:
+
+* The Workspace Fabric core fully implements the relationship-oriented orchestration model defined by ADR-0005 and ADR-0009.
+* Drivers expose sufficient metadata for planner-based relationship reasoning.
+* The planner supports endpoint-aware orchestration independent of hardware implementation.
+* Existing supported functionality remains fully operational.
+* Driver packages, core packages, tests, documentation, and examples are mutually consistent.
+* The internal relationship model is ready to be exposed through the public API without architectural redesign.
+
+The completion of Phase 5 marks the transition from building the internal orchestration engine to exposing stable public interfaces in Phase 6.
