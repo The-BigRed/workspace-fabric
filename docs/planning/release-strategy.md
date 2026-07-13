@@ -100,11 +100,13 @@ Development Phases:
 - Foundation
 - Hardware Integration
 - Modular Driver Platform
+- Relationship-Oriented Control Plane
 - Core Interfaces
 - Configuration Experience
 - Productization
 
-Completion of Productization constitutes the first complete public release.
+Completion of Phase 8 Productization constitutes the first complete public
+release.
 
 Following Release 1.0, the project transitions to release-based development.
 
@@ -210,6 +212,14 @@ Compatibility considerations include:
 - Configuration files
 - Driver contracts
 - Capability model
+
+During pre-1.0 development, Workspace Fabric does not promise historical
+compatibility for every internal interface, configuration structure, or Driver
+API revision. Accepted architectural decisions may require breaking
+transitional pre-release methods.
+
+Every completed phase and point release must still leave the repository
+coherent, integrated, and operational.
 
 When compatibility cannot reasonably be maintained, the change should be:
 

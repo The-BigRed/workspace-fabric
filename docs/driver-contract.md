@@ -10,6 +10,9 @@ Drivers isolate vendor-, protocol-, platform-, and service-specific behavior
 from the core orchestration engine. The core never directly speaks Telnet,
 RS-232, Redfish, PiKVM APIs, Windows APIs, or other native interfaces.
 
+This contract is aligned with ADR-0005 and ADR-0009: drivers describe endpoint
+metadata and constraints, while the core owns relationship orchestration.
+
 ## Package Roles
 
 ### Core Application
@@ -26,6 +29,7 @@ The Driver API owns portable contracts shared by the core and driver packages:
 - Driver results
 - Health and state models
 - Capabilities
+- Endpoint metadata and constraints
 - Structured issues and errors
 - Plugin descriptor
 - Compatibility version
@@ -101,7 +105,7 @@ class DriverPlugin:
     supported_driver_api: str
     factory: DriverFactory
     configuration_schema: Mapping[str, object]
-    port_metadata: Mapping[str, object]
+    endpoint_metadata: Mapping[str, object]
     capability_metadata: Mapping[str, object]
 ```
 
@@ -113,7 +117,7 @@ Exact Python types may evolve, but the descriptor must include:
 - Supported Driver API version or range
 - Factory for configured instances
 - Configuration requirements
-- Port or endpoint metadata where known
+- Endpoint or port metadata where known
 - Capability metadata where known
 
 Optional metadata may include:
@@ -126,6 +130,31 @@ Optional metadata may include:
 - Connectivity tests
 - Firmware compatibility notes
 - Deprecation information
+
+## Endpoint Metadata
+
+Drivers describe endpoints so the Workspace Fabric core can validate and plan
+relationship-oriented intent.
+
+Endpoint metadata is descriptive and may include:
+
+- Endpoint identifier
+- Human-readable label
+- Direction, such as input, output, source, sink, host, or device
+- Accepted endpoint or resource types
+- Minimum and maximum relationship cardinality
+- Disconnect support
+- Required-assignment behavior
+- Driver-visible constraints
+- Structured supported, unsupported, or unknown capability outcomes
+
+Drivers do not decide global relationship policy. The core owns relationship
+intent, reconciliation, managed scope, conflict detection, and transaction
+planning.
+
+Point-to-point route actions remain the current execution primitives. The core
+may derive those actions from relationship intent, but drivers still apply only
+the assigned device-local action.
 
 ## Stable Driver Type Identifiers
 
@@ -175,6 +204,7 @@ A driver is responsible for:
 - Connecting to its target
 - Reporting health
 - Reporting capabilities
+- Reporting endpoint metadata and constraints
 - Reporting observed state where possible
 - Validating driver-specific actions
 - Planning driver-specific operations
@@ -273,6 +303,10 @@ unknown
 
 Capabilities are controller-instance-specific. Drivers must not omit unknown or
 unsupported required capabilities merely to pass validation.
+
+Capability and endpoint metadata must distinguish supported, unsupported, and
+unknown behavior. Unknown support is a valid result and must not be reported as
+success merely to satisfy a planner request.
 
 ## State
 

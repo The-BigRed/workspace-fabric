@@ -1,5 +1,8 @@
 # Workspace Fabric v0.3.0 Release Checklist
 
+Historical release-provenance document. The active release checklist is
+`RELEASE_CHECKLIST_v0.4.0.md`.
+
 ## Documentation Review
 
 - [ ] Review `README.md`.

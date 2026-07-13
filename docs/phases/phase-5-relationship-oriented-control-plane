@@ -1,5 +1,9 @@
 # Phase 5 – Relationship-Oriented Control Plane
 
+## Status
+
+Current
+
 ## Objective
 
 Implement the relationship-oriented orchestration model defined by **ADR-0005: Driver Metadata and Endpoint Introspection** and **ADR-0009: Endpoint Relationships and Route Orchestration**.

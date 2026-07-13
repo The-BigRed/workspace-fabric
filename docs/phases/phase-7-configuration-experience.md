@@ -1,4 +1,4 @@
-# Phase 6 – Configuration Experience
+# Phase 7 – Configuration Experience
 
 ## Status
 
@@ -10,7 +10,8 @@ Provide a complete configuration and operational experience for Workspace
 Fabric without requiring users to manually author or edit YAML.
 
 Previous phases establish the architecture, hardware integration, modular
-driver platform, and stable public interfaces. This phase focuses on making
+driver platform, relationship-oriented control plane, and stable public
+interfaces. This phase focuses on making
 those capabilities accessible through intuitive tooling while preserving YAML
 as the authoritative serialized representation of the configuration model.
 
@@ -47,7 +48,7 @@ The following principles guide every deliverable in this phase.
 
 ---
 
-## Milestone 6.1 – Configuration Service
+## Milestone 7.1 – Configuration Service
 
 ### Deliverables
 
@@ -68,7 +69,7 @@ Implement a configuration service responsible for:
 
 ---
 
-## Milestone 6.2 – Driver Onboarding
+## Milestone 7.2 – Driver Onboarding
 
 ### Deliverables
 
@@ -84,11 +85,12 @@ Provide interactive workflows for:
 
 - Supported drivers can be onboarded without editing YAML.
 - Validation errors are presented before configuration is committed.
-- Driver metadata introduced during Phase 4 is sufficient for onboarding.
+- Driver and endpoint metadata introduced during Phases 4 and 5 are sufficient
+  for onboarding.
 
 ---
 
-## Milestone 6.3 – Physical Topology
+## Milestone 7.3 – Physical Topology
 
 ### Deliverables
 
@@ -108,7 +110,7 @@ Provide interactive management of:
 
 ---
 
-## Milestone 6.4 – Workspace Authoring
+## Milestone 7.4 – Workspace Authoring
 
 ### Deliverables
 
@@ -136,7 +138,7 @@ Support:
 
 ---
 
-## Milestone 6.5 – Reference Web UI
+## Milestone 7.5 – Reference Web UI
 
 ### Purpose
 
@@ -171,7 +173,7 @@ Support:
 
 ---
 
-## Milestone 6.6 – User Experience
+## Milestone 7.6 – User Experience
 
 ### Deliverables
 
@@ -194,7 +196,7 @@ Improve operational workflows including:
 
 ---
 
-## Milestone 6.7 – End-to-End Validation
+## Milestone 7.7 – End-to-End Validation
 
 ### Deliverables
 
@@ -222,7 +224,7 @@ Validate complete workflows including:
 
 ## Phase Completion Criteria
 
-Phase 6 is complete when:
+Phase 7 is complete when:
 
 - Interactive configuration replaces manual YAML authoring.
 - Driver onboarding is fully operational.

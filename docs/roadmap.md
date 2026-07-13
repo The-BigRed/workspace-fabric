@@ -13,7 +13,7 @@ project planning documents rather than additional numbered phases.
 
 ---
 
-# Phase 1 – Architecture ✅
+# Phase 1 - Architecture - Complete
 
 ## Objective
 
@@ -27,7 +27,7 @@ platforms without coupling the core to vendor-specific implementations.
 
 ---
 
-# Phase 2 – Foundation ✅
+# Phase 2 - Foundation - Complete
 
 ## Objective
 
@@ -52,11 +52,11 @@ operations against mock hardware.
 
 ---
 
-# Phase 3 – Hardware Integration ✅
+# Phase 3 - Hardware Integration - Complete
 
 ## Objective
 
-Validate the architecture against real hardware.
+Validate the architecture against real HDMI and USB matrix hardware.
 
 ## Major Deliverables
 
@@ -64,23 +64,20 @@ Validate the architecture against real hardware.
 - Physical lab configuration
 - OREI UHD-808 driver
 - OREI UKM404 driver
-- Windows Display Agent
-- PiKVM integration
 - End-to-end physical validation
 - Safety and recovery behavior
 
 ## Outcome
 
-Workspace Fabric has successfully transitioned from mock drivers to physical
-hardware.
+Workspace Fabric successfully transitioned from mock drivers to physical
+hardware. The driver abstraction, controller model, transaction engine, and
+configuration architecture were validated against the reference environment.
 
-The driver abstraction, controller model, transaction engine, and
-configuration architecture have all been validated against a real reference
-environment.
+Windows Display Agent and PiKVM-specific implementations remain future work.
 
 ---
 
-# Phase 4 – Modular Driver Platform
+# Phase 4 - Modular Driver Platform - Complete
 
 ## Objective
 
@@ -98,16 +95,44 @@ independently versioned driver platform.
 - OREI driver migration
 - Physical regression validation
 
-## Completion Criteria
+## Outcome
 
 Drivers are independently installable, discoverable, versioned, and validated.
 
 The Workspace Fabric core contains no vendor-specific implementations and
-interacts with drivers exclusively through the published Driver API.
+interacts with drivers through the published Driver API and entry-point
+metadata.
 
 ---
 
-# Phase 5 – Core Interfaces
+# Phase 5 - Relationship-Oriented Control Plane - Current
+
+## Objective
+
+Implement the relationship-oriented orchestration model defined by ADR-0005 and
+ADR-0009.
+
+## Major Deliverables
+
+- Endpoint metadata
+- Endpoint constraints
+- Relationship model
+- Relationship planner
+- Relationship groups
+- Managed scope reconciliation
+- Structured supported, unsupported, and unknown outcomes
+- Mock-first driver metadata updates
+- Physical regression validation
+
+## Completion Criteria
+
+The core can reason about endpoint relationships, cardinality, reconciliation,
+and constraints while drivers remain descriptive and existing validated
+physical behavior remains operational.
+
+---
+
+# Phase 6 - Core Interfaces
 
 ## Objective
 
@@ -118,26 +143,22 @@ Expose the Workspace Fabric control plane through stable public interfaces.
 - Stable REST API
 - API versioning
 - API documentation
-- CLI completion
+- Administrative CLI
+- Public CLI
 - Transaction APIs
 - State APIs
-- Workspace, Scene, and Patch APIs
+- Workspace, Scene, Patch, and relationship APIs
 - Health APIs
-- API key authentication
-- OAuth-style authorization scopes
+- API key authentication and authorization scopes
 
 ## Completion Criteria
 
-Every core Workspace Fabric operation is available through the public API.
-
-The CLI serves as a reference implementation of that API.
-
-External consumers can fully operate Workspace Fabric without requiring
-knowledge of internal implementation details.
+Every core Workspace Fabric operation is available through documented public
+interfaces without requiring consumers to know internal implementation details.
 
 ---
 
-# Phase 6 – Configuration Experience
+# Phase 7 - Configuration Experience
 
 ## Objective
 
@@ -154,21 +175,17 @@ configuration experience.
 - Patch editor
 - Configuration validation
 - Reference Web UI
-- Desktop application
+- Desktop application evaluation
 
 ## Completion Criteria
 
 Users can configure and operate Workspace Fabric without manually editing YAML.
-
 YAML remains the serialized source of truth rather than the primary authoring
 experience.
 
-The reference Web UI remains an optional component that consumes the same
-public API available to all clients.
-
 ---
 
-# Phase 7 – Productization
+# Phase 8 - Productization
 
 ## Objective
 
@@ -189,18 +206,14 @@ Deliver the first complete public release of Workspace Fabric.
 
 ## Completion Criteria
 
-Workspace Fabric is suitable for daily production use.
-
-Installation, configuration, operation, and maintenance are fully documented.
-
-The project transitions from milestone-driven development to release-based
-development.
+Workspace Fabric is suitable for daily production use. Installation,
+configuration, operation, and maintenance are documented and validated.
 
 ---
 
 # Release 1.0
 
-Completion of Phase 7 constitutes the first complete public release of
+Completion of Phase 8 constitutes the first complete public release of
 Workspace Fabric.
 
 Subsequent development is managed through:

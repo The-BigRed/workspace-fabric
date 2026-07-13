@@ -71,5 +71,7 @@ Phase 3 is complete because:
 
 Phase 3 establishes the `v0.3.0` physically validated baseline.
 
-Further driver packaging work belongs to Phase 4. Product APIs and applications
-belong to Phase 5. New hardware capabilities and integrations belong to Phase 6.
+Further driver packaging work belongs to Phase 4. Relationship-oriented
+orchestration belongs to Phase 5. Product APIs and applications belong to
+Phase 6. New hardware capabilities and integrations remain future work unless
+scheduled by the roadmap or backlog.

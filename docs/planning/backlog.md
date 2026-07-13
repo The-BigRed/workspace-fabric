@@ -101,7 +101,7 @@ Accepted
 
 **Planning Horizon**
 
-Now
+Next
 
 **Priority**
 
@@ -266,6 +266,11 @@ Expand the UHD-808 driver to expose advanced hardware capabilities including:
 The reference hardware already supports these capabilities and they
 significantly improve the value of the reference implementation.
 
+Future EDID, scaling, CEC, and related behavior should use the typed video
+domain-policy extension model established by ADR-0009. The generic
+relationship framework belongs to Phase 5; UHD-808-specific execution remains a
+driver enhancement.
+
 ---
 
 ## Additional Matrix Drivers
@@ -427,8 +432,19 @@ Medium
 
 **Description**
 
-Expand driver metadata and discovery capabilities to improve automatic
-configuration and future UI experiences.
+Improve the developer and operator experience around already-discovered driver
+metadata after the Phase 5 endpoint model is in place.
+
+Examples include:
+
+- Metadata provenance and validation reporting
+- Driver documentation links
+- Install or upgrade guidance for missing capabilities
+- Driver catalog filtering, grouping, and presentation hints
+- Compatibility diagnostics beyond the core Phase 5 relationship contract
+
+This item does not duplicate Phase 5 endpoint metadata, relationship planning,
+or ADR-0009 implementation work.
 
 ---
 

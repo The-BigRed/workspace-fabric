@@ -205,7 +205,7 @@ predictability.
 
 # Release Transition
 
-Completion of Phase 7 constitutes the first complete public release of
+Completion of Phase 8 constitutes the first complete public release of
 Workspace Fabric.
 
 At that point, development transitions from milestone-driven planning to

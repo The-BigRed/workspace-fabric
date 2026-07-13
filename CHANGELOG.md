@@ -7,24 +7,34 @@ Versioning**.
 
 ## [Unreleased]
 
+No unreleased changes are currently recorded.
+
+---
+
+## [0.4.0] - 2026-07-13
+
 ### Added
 
-- Phase 4.5 driver metadata catalog for listing available and unavailable
-  installed driver plugins with structured diagnostics.
+- Modular driver package architecture for the core, shared Driver API, mock
+  drivers, and OREI driver packages.
+- Independently packaged and versioned driver distributions for mock drivers,
+  OREI UHD-808, and OREI UKM404.
+- Versioned Driver API package with portable driver contracts and plugin
+  descriptor metadata.
+- Entry-point driver discovery through the `workspace_fabric.drivers` group.
+- Driver metadata catalog for listing available and unavailable installed
+  driver plugins with structured diagnostics.
 - Serializable descriptor metadata for mock, UHD-808, and UKM404 driver
-  packages covering configuration requirements, ports, and capabilities.
-- Isolated wheel regression coverage for the `workspace-fabric-core` driver
-  catalog package contents and installed entry-point discovery.
-- Phase 4.6 driver migration regression coverage for core/package dependency
-  boundaries.
-- Portable sdist-to-wheel packaging regression coverage for
-  `workspace-fabric-core`.
-- Phase 4.7 lifecycle and compatibility regression coverage for installed,
-  removed, upgraded, rolled back, missing, incompatible, broken, and duplicate
-  driver plugins.
-- Phase 4.8 installed-wheel physical regression coverage for the reference
-  `desktop`, `work`, and `hybrid_meeting` workspace transitions using
-  independently installed UHD-808 and UKM404 driver packages.
+  packages covering configuration requirements, endpoints or ports, and
+  capabilities.
+- Lifecycle and compatibility validation for installed, removed, upgraded,
+  rolled back, missing, incompatible, broken, and duplicate driver plugins.
+- Installed-wheel physical regression coverage for the reference `desktop`,
+  `work`, and `hybrid_meeting` workspace transitions using independently
+  installed UHD-808 and UKM404 driver packages.
+- Phase 5 - Relationship-Oriented Control Plane planning, with Core Interfaces
+  renumbered to Phase 6, Configuration Experience renumbered to Phase 7, and
+  Productization renumbered to Phase 8.
 
 ### Changed
 
@@ -39,6 +49,8 @@ Versioning**.
 - Physical regression validation now exercises installed OREI driver packages
   and verifies observed UHD-808 and UKM404 state without reintroducing vendor
   implementations into the core package.
+- ADR-0005 was rewritten and accepted as "Driver Metadata and Endpoint
+  Introspection".
 
 ### Fixed
 
@@ -56,14 +68,20 @@ Versioning**.
 - Legacy mock, UHD-808, and UKM404 implementation modules from the core
   `workspace_fabric.drivers` package.
 
+### Architecture
+
+- ADR-0009, "Endpoint Relationships and Route Orchestration", was accepted.
+- v0.4.0 includes the accepted Phase 5 architecture and phase renumbering. It
+  does not implement Phase 5 relationship-oriented planner behavior.
+
 ### Planned
 
 Development toward Release 1.0 continues with:
 
-- Phase 4 – Modular Driver Platform
-- Phase 5 – Core Interfaces
-- Phase 6 – Configuration Experience
-- Phase 7 – Productization
+- Phase 5 - Relationship-Oriented Control Plane
+- Phase 6 - Core Interfaces
+- Phase 7 - Configuration Experience
+- Phase 8 - Productization
 
 Planned work is tracked in the project Backlog.
 
@@ -76,14 +94,14 @@ Planned work is tracked in the project Backlog.
 - Physical hardware support validated.
 - OREI UHD-808 HDMI matrix driver.
 - OREI UKM404 USB matrix driver.
-- Windows Display Agent architecture.
-- PiKVM integration architecture.
 - End-to-end physical routing validation.
 - Driver capability model.
 - Driver introspection model.
 - Configuration object model.
 - Workspace, Scene, and Patch architecture.
 - Authentication and Authorization architecture (ADR-0007).
+- Future Windows Display Agent and remote-console considerations documented as
+  architecture and backlog items rather than completed implementations.
 - Project planning framework.
 - Release strategy.
 - Architectural Considerations.
@@ -101,8 +119,8 @@ Planned work is tracked in the project Backlog.
 Version 0.3 represents the first complete architectural checkpoint following
 validation of the reference hardware environment.
 
-The project is now transitioning from hardware integration into development of
-the public interfaces and user experience.
+The project is now transitioning from hardware integration into the modular
+driver platform.
 
 ---
 

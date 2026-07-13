@@ -11,7 +11,9 @@ It translates user intent into coordinated actions across independently
 packaged drivers, configured controllers, physical devices, software agents,
 and future service integrations.
 
-Accepted architectural rationale is recorded in `docs/architecture/adr/`.
+Accepted architectural rationale is recorded in `docs/architecture/adr/`,
+including ADR-0005 for driver metadata and endpoint introspection and ADR-0009
+for endpoint relationships and route orchestration.
 
 ## Architectural Goals
 
@@ -22,6 +24,7 @@ Workspace Fabric is designed to:
 - Remain API-first.
 - Be deterministic and explainable.
 - Preserve truthful physical topology.
+- Model endpoint relationships explicitly.
 - Treat controllers, resources, capabilities, transactions, configuration, and
   drivers as first-class concepts.
 - Support optional capabilities without reducing the platform to the lowest
@@ -249,12 +252,36 @@ core orchestration logic.
 ## Physical Topology and Resource Attachment
 
 Workspace Fabric preserves explicit physical connectivity. Drivers describe
-ports and capabilities. Controllers represent installed instances. Resources
-map to controller endpoints. The planner resolves logical intent to device-local
-actions before invoking a driver.
+endpoints, ports, constraints, and capabilities. Controllers represent
+installed instances. Resources map to controller endpoints. The planner
+resolves logical intent to device-local actions before invoking a driver.
 
 The system must not assume symmetrical ports, shared host maps, or universally
 queryable state.
+
+## Endpoint Relationships
+
+Workspace Fabric models directed endpoint relationships as first-class planning
+concepts. Drivers describe endpoint metadata; the core interprets relationship
+intent and decides how to reconcile desired state.
+
+Driver-described endpoint metadata includes direction, accepted endpoint types,
+minimum and maximum cardinality, disconnect support, required assignment, and
+domain-specific constraints. This metadata is descriptive. It does not transfer
+global orchestration policy to drivers.
+
+The core owns additive, exclusive, and reconciled relationship semantics. It
+also owns managed scope, conflict detection, deterministic planning, and
+structured outcomes for supported, unsupported, and unknown requests.
+
+Logical relationship groups allow one-to-one, one-to-many, and many-to-one
+intent to be represented independently of the native command shape required by
+individual controllers. Drivers continue receiving assigned device-local
+actions.
+
+Typed domain-specific policy extensions, such as future video or audio policy,
+extend relationship planning without embedding vendor-specific behavior in the
+core. Domain-specific execution remains inside driver packages.
 
 ## Driver Metadata and Configuration Authoring
 
@@ -267,7 +294,7 @@ A future authoring interface should:
 2. Read driver-declared configuration requirements.
 3. Create a controller instance.
 4. Validate connectivity.
-5. Query identity, ports, capabilities, and state where supported.
+5. Query identity, endpoints, capabilities, and state where supported.
 6. Map resources to declared or discovered endpoints.
 7. Compose workspaces, scenes, and patches.
 8. Validate and serialize the result.

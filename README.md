@@ -140,22 +140,27 @@ actions into native hardware or software operations.
 
 # Current Status
 
-Workspace Fabric is currently progressing through:
+Workspace Fabric has completed:
 
 **Phase 4 – Modular Driver Platform**
+
+The current development phase is:
+
+**Phase 5 – Relationship-Oriented Control Plane**
 
 Completed:
 
 - ✅ Architecture
 - ✅ Foundation
 - ✅ Hardware Integration
+- ✅ Modular Driver Platform
 
-Planned:
+Current and planned:
 
-- Modular Driver Platform
-- Core Interfaces
-- Configuration Experience
-- Productization
+- Phase 5 – Relationship-Oriented Control Plane
+- Phase 6 – Core Interfaces
+- Phase 7 – Configuration Experience
+- Phase 8 – Productization
 - Release 1.0
 
 Detailed project status is maintained in
@@ -167,12 +172,12 @@ Detailed project status is maintained in
 
 | Document | Purpose |
 |----------|---------|
-| `architecture.md` | High-level system architecture |
-| `philosophy.md` | Long-term engineering philosophy |
-| `roadmap.md` | Development roadmap toward Release 1.0 |
+| `docs/architecture.md` | High-level system architecture |
+| `docs/philosophy.md` | Long-term engineering philosophy |
+| `docs/roadmap.md` | Development roadmap toward Release 1.0 |
 | `PROJECT_STATUS.md` | Current implementation status |
 | `CHANGELOG.md` | Project history |
-| `docs/adr/` | Architectural Decision Records |
+| `docs/architecture/adr/` | Architectural Decision Records |
 | `docs/planning/` | Planning, backlog, release strategy, and architectural considerations |
 
 ---
@@ -183,10 +188,10 @@ Current development focuses on the reference implementation.
 
 Developers interested in contributing should begin by reading:
 
-1. `philosophy.md`
-2. `architecture.md`
+1. `docs/philosophy.md`
+2. `docs/architecture.md`
 3. The Architectural Decision Records
-4. `roadmap.md`
+4. `docs/roadmap.md`
 5. `PROJECT_STATUS.md`
 
 Together these documents explain both the architecture and the current

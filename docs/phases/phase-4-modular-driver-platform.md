@@ -12,7 +12,7 @@ independently.
 
 The goal is not to redesign the working physical drivers. The goal is to
 formalize package, dependency, discovery, compatibility, and lifecycle
-boundaries before Phase 5 builds public APIs and configuration interfaces around
+boundaries before Phase 5 builds relationship-oriented orchestration around
 them.
 
 ## Constraints

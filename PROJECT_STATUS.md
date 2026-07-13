@@ -2,133 +2,100 @@
 
 ## Current Version
 
-**v0.3 (Architecture Checkpoint)**
+**v0.4.0 release candidate**
 
-Version 0.3 establishes the architectural baseline for Workspace Fabric
-following successful validation of the reference hardware environment.
+Workspace Fabric is being prepared for the v0.4.0 documentation and planning
+release. Phase 4 is complete, and the repository is transitioning to Phase 5.
 
-Development is now focused on modularizing the driver platform in preparation
-for stable public interfaces and the first complete product release.
+Current package metadata, read from package `pyproject.toml` files:
+
+| Package | Version |
+| --- | --- |
+| `workspace-fabric-core` | `0.3.0` |
+| `workspace-fabric-driver-api` | `1.0.0` |
+| `workspace-fabric-driver-mock` | `1.0.0` |
+| `workspace-fabric-driver-orei-uhd808` | `1.0.0` |
+| `workspace-fabric-driver-orei-ukm404` | `1.0.0` |
+
+Release publication, tagging, and package version changes are separate release
+operations and are not performed by this documentation transition.
 
 ---
 
 # Current Phase
 
-**Phase 4 – Modular Driver Platform**
+**Phase 5 - Relationship-Oriented Control Plane**
 
 ## Objective
 
-Decouple drivers from the Workspace Fabric core and establish a modular,
-independently versioned plugin architecture.
+Implement the relationship-oriented orchestration model defined by accepted
+ADR-0005 and ADR-0009 while preserving the Phase 4 modular driver platform.
 
-## Current Milestone Progress
+Phase 5 starts with Milestone 5.1 - Endpoint Metadata.
 
-| Milestone | Status | Completion |
-|-----------|--------|-----------|
-| 4.1 – Architecture and Audit | ✅ Complete | 2026-07-11 |
-| 4.2 – Monorepo Package Structure | ✅ Complete | 2026-07-11 |
-| 4.3 – Versioned Driver API | ✅ Complete | 2026-07-13 |
-| 4.4 – Installed-Driver Discovery | ✅ Complete | 2026-07-13 |
-| 4.5 – Driver Metadata and Catalog | ✅ Complete | 2026-07-13 |
-| 4.6 – Driver Migration | ✅ Complete | 2026-07-13 |
-| 4.7 – Lifecycle and Compatibility | ✅ Complete | 2026-07-13 |
-| 4.8 – Physical Regression | ✅ Complete | 2026-07-13 |
+## Governing Decisions
 
-Current work includes:
+| Decision | Status | Purpose |
+| --- | --- | --- |
+| ADR-0005: Driver Metadata and Endpoint Introspection | Accepted | Drivers describe endpoint metadata and capabilities. |
+| ADR-0009: Endpoint Relationships and Route Orchestration | Accepted | The core interprets endpoint relationships, cardinality, reconciliation, and route orchestration. |
 
-- ✅ Architecture audit and packaging analysis
-- ✅ Monorepo package extraction (4.2)
-- ✅ Versioned Driver API (4.3)
-- ✅ Plugin discovery implementation (4.4)
-- ✅ Driver metadata catalog (4.5)
-- ✅ Driver migration (4.6)
-- ✅ Lifecycle and compatibility validation (4.7)
-- ✅ Physical regression testing (4.8)
+Phase 5 does not implement REST APIs, user interfaces, EDID management, video
+scaling, CEC, audio DSP policy, Windows Display Agent behavior, PiKVM behavior,
+or other domain-specific execution features.
 
 ---
 
-# Project Status
+# Phase Status
 
-| Area | Status |
-|------|--------|
-| Architecture | Complete |
-| Core Foundation | Complete |
-| Hardware Integration | Complete |
-| Documentation | Current |
-| Reference Hardware | Operational |
-| Modular Driver Platform | Complete |
-| Public API | Planned |
-| Configuration Experience | Planned |
-| Productization | Planned |
-
----
-
-# Completed Phases
-
-## Phase 1 – Architecture ✅
-
-Completed.
-
-Established the architectural philosophy, object model, terminology,
-configuration model, transaction model, and architectural boundaries.
+| Phase | Status |
+| --- | --- |
+| Phase 1 - Architecture | Complete |
+| Phase 2 - Foundation | Complete |
+| Phase 3 - Hardware Integration | Complete |
+| Phase 4 - Modular Driver Platform | Complete |
+| Phase 5 - Relationship-Oriented Control Plane | Current |
+| Phase 6 - Core Interfaces | Planned |
+| Phase 7 - Configuration Experience | Planned |
+| Phase 8 - Productization | Planned |
+| Release 1.0 | Planned after Phase 8 |
 
 ---
 
-## Phase 2 – Foundation ✅
+# Phase 4 Completion Summary
 
-Completed.
+Phase 4 established the modular driver platform:
 
-Implemented the hardware-independent Workspace Fabric core including:
+- Monorepo package boundaries for core, Driver API, mock drivers, and OREI
+  drivers.
+- Versioned Driver API package.
+- Entry-point driver discovery.
+- Driver metadata catalog.
+- Mock and OREI driver migration out of the core package.
+- Lifecycle and compatibility validation.
+- Isolated wheel and sdist packaging validation.
+- Physical regression validation using independently installed OREI driver
+  packages.
 
-- Configuration loading
-- Resource graph
-- Capability validation
-- Transaction planning
-- Transaction execution
-- Mock drivers
-- Persistent state
-- Initial CLI
-
----
-
-## Phase 3 – Hardware Integration ✅
-
-Completed.
-
-Validated the architecture against the reference hardware environment.
-
-Implemented:
-
-- OREI UHD-808 HDMI matrix driver
-- OREI UKM404 USB matrix driver
-- Physical laboratory configuration
-- End-to-end routing validation
-- Driver contract validation
-- Safety and recovery behavior
+Phase 4 functionality must remain operational throughout Phase 5.
 
 ---
 
 # Current Development Focus
 
-Phase 4 established the modular driver platform.
+Milestone 5.1 focuses on endpoint metadata. Drivers describe endpoint direction,
+accepted endpoint types, cardinality constraints, disconnect support, required
+assignment, and structured supported/unsupported/unknown outcomes. The core
+uses that descriptive metadata to validate and plan relationship-oriented
+intent.
 
-The primary objective was to separate driver implementations from the Workspace
-Fabric core while preserving compatibility with the validated Phase 3
-architecture.
+The guiding boundary is:
 
-This work provides the foundation for the public APIs and interactive
-configuration tools introduced in later phases.
+- Drivers describe.
+- The core decides.
 
----
-
-# Next Milestones
-
-Following completion of the Modular Driver Platform:
-
-- Phase 5 – Core Interfaces
-- Phase 6 – Configuration Experience
-- Phase 7 – Productization
-- Release 1.0
+Mock implementations should be updated before physical drivers where practical.
+Existing validated physical behavior remains a release-boundary requirement.
 
 ---
 
@@ -155,8 +122,9 @@ The reference laboratory currently includes:
 - Primary 4K monitor
 - Secondary 2K monitor
 
-This environment serves as the primary validation platform for Workspace
-Fabric development.
+This environment serves as the primary validation platform for Workspace Fabric
+development. Windows Display Agent and PiKVM-specific implementation work
+remains deferred.
 
 ---
 
@@ -175,7 +143,7 @@ Current documentation includes:
 - Planning Documents
 - CHANGELOG
 
-Documentation is synchronized with the v0.3 architectural checkpoint.
+Documentation is synchronized with the v0.4.0 release-candidate transition.
 
 ---
 
@@ -185,12 +153,13 @@ Current repository state:
 
 - Architecture stabilized
 - Governance established
-- Driver architecture validated
-- Planning framework established
-- Phase 4 modular driver platform completed
+- Physical baseline validated
+- Modular driver platform completed
+- Phase 5 relationship-oriented control-plane planning active
+- No Phase 5 implementation included in this documentation transition
 
-Workspace Fabric is progressing from architectural validation toward a
-production-ready software platform.
+Workspace Fabric is progressing from modular driver packaging toward
+relationship-oriented orchestration.
 
 ---
 

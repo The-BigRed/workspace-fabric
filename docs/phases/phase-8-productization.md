@@ -1,4 +1,4 @@
-# Phase 7 – Productization
+# Phase 8 – Productization
 
 ## Status
 
@@ -9,7 +9,8 @@ Planned
 Prepare Workspace Fabric for its first complete public release.
 
 Previous phases establish the architecture, hardware integration, modular
-driver platform, public interfaces, and interactive configuration experience.
+driver platform, relationship-oriented control plane, public interfaces, and
+interactive configuration experience.
 This phase focuses on operational readiness, installation, documentation,
 maintenance, and release quality.
 
@@ -42,7 +43,7 @@ The following principles guide every deliverable in this phase.
 
 ---
 
-# Milestone 7.1 – Installation and Packaging
+# Milestone 8.1 – Installation and Packaging
 
 ## Deliverables
 
@@ -62,7 +63,7 @@ Provide installation methods for supported platforms, including:
 
 ---
 
-# Milestone 7.2 – Bootstrap and Administration
+# Milestone 8.2 – Bootstrap and Administration
 
 ## Deliverables
 
@@ -83,7 +84,7 @@ Complete administrative workflows including:
 
 ---
 
-# Milestone 7.3 – Operations
+# Milestone 8.3 – Operations
 
 ## Deliverables
 
@@ -103,7 +104,7 @@ Provide operational capabilities including:
 
 ---
 
-# Milestone 7.4 – Backup and Recovery
+# Milestone 8.4 – Backup and Recovery
 
 ## Deliverables
 
@@ -124,7 +125,7 @@ Support:
 
 ---
 
-# Milestone 7.5 – Documentation
+# Milestone 8.5 – Documentation
 
 ## Deliverables
 
@@ -147,7 +148,7 @@ Complete user-facing documentation including:
 
 ---
 
-# Milestone 7.6 – Production Validation
+# Milestone 8.6 – Production Validation
 
 ## Deliverables
 
@@ -173,7 +174,7 @@ Validate:
 
 ---
 
-# Milestone 7.7 – Release Readiness
+# Milestone 8.7 – Release Readiness
 
 ## Deliverables
 
@@ -194,14 +195,14 @@ Complete:
 
 - Release documentation is complete.
 - Repository reflects the released architecture.
-- All Phase 7 completion criteria are satisfied.
+- All Phase 8 completion criteria are satisfied.
 - Workspace Fabric is ready for Release 1.0.
 
 ---
 
 # Phase Completion Criteria
 
-Phase 7 is complete when:
+Phase 8 is complete when:
 
 - Workspace Fabric can be installed using documented procedures.
 - Administrative bootstrap is complete.

@@ -1,5 +1,8 @@
 # Phase 4 Implementation Checklist – Milestones 4.2–4.8
 
+Historical implementation checklist. Phase 4 is complete; current Phase 5
+guidance lives in `ai/implementation/phase-5-implementation-checklist.md`.
+
 This checklist details the exact steps to execute after Milestone 4.1 audit completion.
 
 ---

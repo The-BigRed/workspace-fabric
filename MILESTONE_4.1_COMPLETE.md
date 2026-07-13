@@ -1,5 +1,8 @@
 # Milestone 4.1 Implementation Complete
 
+Historical milestone record. Phase 4 is complete, and the active development
+phase is Phase 5 - Relationship-Oriented Control Plane.
+
 **Completed:** 2026-07-11
 **Status:** ✅ COMPLETE – All Acceptance Criteria Met
 

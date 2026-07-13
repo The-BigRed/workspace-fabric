@@ -13,11 +13,11 @@ of its public API.
 
 ```text
 Driver
-  → Controller
-  → Resource
-  → Workspace
-  → Scene
-  → Patch
+  -> Controller
+  -> Resource
+  -> Workspace
+  -> Scene
+  -> Patch
 ```
 
 Drivers implement behavior. Controllers configure installed driver instances.
@@ -30,80 +30,83 @@ changes.
 - Phase 1: Complete
 - Phase 2: Complete
 - Phase 3: Complete
-- Current phase: Phase 4 – Modular Driver Platform
-- Release target: `v0.3.0`
-- Current milestone: Driver packaging and discovery architecture
+- Phase 4: Complete
+- Current phase: Phase 5 - Relationship-Oriented Control Plane
+- Release transition: `v0.4.0` release candidate
+- Current milestone: 5.1 - Endpoint Metadata
 
-## Phase 4 Objective
+## Phase 5 Objective
 
-Separate driver implementations from the core application so drivers are
-independently installable, discoverable, upgradeable, rollbackable, removable,
-and versioned.
+Implement the relationship-oriented orchestration model defined by:
 
-The repository remains a monorepo for now, but it should produce independent
-packages for the core, Driver API, mock drivers, and physical drivers.
+- ADR-0005: Driver Metadata and Endpoint Introspection
+- ADR-0009: Endpoint Relationships and Route Orchestration
 
-## Phase 4 Priorities
+The goal is to make endpoint relationships, constraints, cardinality, managed
+scope, and reconciliation explicit in the core while preserving the modular
+driver platform established during Phase 4.
 
-1. Accept the driver packaging and discovery ADR.
-2. Audit existing driver registration and imports.
-3. Establish the package-oriented monorepo layout.
-4. Extract a versioned Driver API package.
-5. Implement entry-point-based driver discovery.
-6. Define plugin metadata and compatibility checks.
-7. Migrate mock, UHD-808, and UKM404 drivers without rewriting their behavior.
-8. Validate install, upgrade, rollback, removal, and missing-driver behavior.
-9. Repeat the physical smoke tests.
+## Phase 5 Priorities
 
-## Phase 4 Architecture Rules
+1. Expand Driver API endpoint metadata.
+2. Update mock drivers first where practical.
+3. Add endpoint constraint validation.
+4. Model relationships independently of native driver actions.
+5. Extend the planner to reason about relationship intent.
+6. Preserve existing point-to-point route actions as execution primitives.
+7. Integrate existing OREI drivers without adding hardware capabilities.
+8. Validate structured supported, unsupported, and unknown outcomes.
+9. Repeat physical regression at phase completion.
 
-- The core must not import vendor driver implementations.
+## Phase 5 Architecture Rules
+
+- Drivers describe; the core decides.
+- Endpoint metadata and constraints are driver responsibilities.
+- Relationship intent, reconciliation, and global policy are core
+  responsibilities.
+- Core code must not import vendor driver implementations.
 - Driver implementations must not import core orchestration modules.
-- The core and drivers may depend on the shared Driver API package.
-- Runtime driver discovery must use standard Python package metadata, not
-  arbitrary filesystem scanning.
-- Driver type identifiers in existing configuration should remain stable.
-- An installed but unused driver must not affect runtime behavior.
-- Removing an unused driver must not affect startup or unrelated controllers.
-- A configured but missing driver must produce a structured validation error.
-- Driver package versions are independent from the core version.
-- Compatible driver updates must not require a core release.
-- Existing physical behavior must be preserved during packaging changes.
+- Runtime driver discovery must use standard Python package metadata.
+- Existing validated physical behavior must remain operational at every
+  milestone boundary.
+- Pre-1.0 internal interfaces may change when required by accepted ADRs, but
+  each completed milestone and release must be coherent and operational.
 
-## Explicit Phase 4 Non-Goals
+## Explicit Phase 5 Non-Goals
 
-Do not implement the following during the driver modularization phase unless
-required to preserve existing behavior:
+Do not implement the following during Phase 5 unless required to preserve
+existing behavior:
 
 - Production REST API
 - Web UI
 - Desktop or tablet client
 - Interactive configuration authoring
 - Windows Display Agent
-- PiKVM
-- New UHD-808 features such as EDID, scaler, CEC, or ARC control
+- PiKVM-specific implementation
+- EDID, scaler, CEC, or ARC control
+- Audio DSP policy
 - Additional hardware drivers
 - Multi-user access control
 - Multi-fabric federation
 - Plugin marketplace
 
+REST API work is deferred to Phase 6. Domain-specific hardware execution is
+future driver or policy-extension work built on the Phase 5 relationship model.
+
 ## Later Phases
 
-Phase 5 productizes the platform through APIs, authentication, configuration
-authoring, diagnostics, interfaces, deployment, and a complete user-facing
-release.
+Phase 6 exposes the control plane through stable public interfaces.
 
-Phase 6 expands functionality and the driver ecosystem, including Windows
-Display Agent, PiKVM, additional OREI capabilities, and new hardware or service
-integrations.
+Phase 7 provides the interactive configuration experience.
+
+Phase 8 productizes the platform for Release 1.0.
 
 ## Engineering Guidance
 
 - Preserve accepted ADRs and architecture boundaries.
 - Favor incremental migration over rewrites.
-- Preserve backward compatibility whenever practical.
 - Keep the repository buildable and testable after each milestone.
-- Use mock drivers first for contract and lifecycle tests.
-- Keep physical regression tests as the final acceptance gate.
+- Use mock drivers first for contract and planner tests.
+- Keep physical regression tests as the final phase acceptance gate.
 - Report unknown or unsupported behavior honestly.
 - Record newly verified hardware behavior in the relevant observation files.

@@ -12,16 +12,17 @@ Read these documents in order:
 2. `PROJECT_STATUS.md`
 3. `docs/roadmap.md`
 4. `CONTRIBUTING.md`
-5. `ai/project.md`
-6. The current phase document under `ai/implementation/`
-7. `docs/philosophy.md`
-8. `docs/architecture.md`
-9. `docs/architecture/adr/`, especially ADR-0006 during Phase 4
-10. `docs/driver-contract.md`
-11. `docs/configuration-model.md`
-12. `docs/capability-model.md`
-13. `docs/developer-standards.md`
-14. Relevant hardware documentation and observations
+5. `ai/PROJECT_BRIEF.md`
+6. The current phase document under `docs/phases/`
+7. The current implementation checklist under `ai/implementation/`
+8. `docs/philosophy.md`
+9. `docs/architecture.md`
+10. `docs/architecture/adr/`, especially ADR-0005, ADR-0006, and ADR-0009
+11. `docs/driver-contract.md`
+12. `docs/configuration-model.md`
+13. `docs/capability-model.md`
+14. `docs/developer-standards.md`
+15. Relevant hardware documentation and observations
 
 Use `docs/glossary.md` whenever terminology is unclear.
 
@@ -50,34 +51,34 @@ other systems consume its public API.
 
 ## Current Scope
 
-Phase 3 is complete. The current phase is:
+Phase 4 is complete. The current phase is:
 
 ```text
-Phase 4 – Modular Driver Platform
+Phase 5 - Relationship-Oriented Control Plane
 ```
 
-The objective is to separate drivers from the core application without changing
-working physical behavior.
+The objective is to implement the relationship-oriented orchestration model
+defined by accepted ADR-0005 and ADR-0009 while preserving the modular driver
+platform established in Phase 4.
 
 Current sequence:
 
-1. Driver packaging and discovery ADR
-2. Monorepo package structure
-3. Versioned Driver API package
-4. Entry-point discovery
-5. Driver metadata and catalog
-6. Mock and OREI package migration
-7. Lifecycle and compatibility validation
-8. Physical regression testing
+1. Endpoint metadata
+2. Relationship model
+3. Relationship planner
+4. Driver integration
+5. Relationship groups
+6. Planner validation
+7. Regression and physical validation
 
-## Phase 4 Package Boundaries
+## Enduring Package Boundaries
 
-The target dependency direction is:
+The Phase 4 package boundary remains authoritative:
 
 ```text
-core ───────────────┐
-                    ├──> driver-api
-implementation ─────┘
+core ----------+
+               +--> driver-api
+implementation-+
 ```
 
 Rules:
@@ -87,14 +88,44 @@ Rules:
 - Core and drivers may depend on the shared Driver API.
 - Driver discovery must use Python package entry points.
 - Do not implement production discovery by scanning arbitrary source folders.
-- Existing driver type identifiers should remain stable.
+- Existing driver type identifiers should remain stable unless an accepted ADR
+  and release plan require a pre-1.0 breaking change.
 - An unused installed driver must have no runtime side effects.
 - A configured but missing driver must fail validation with a structured error.
 - Driver versions must remain independent from the core version.
 
+## Phase 5 Responsibility Boundary
+
+The guiding rule is:
+
+```text
+Drivers describe; the core decides.
+```
+
+Driver responsibilities:
+
+- Describe endpoint metadata and constraints.
+- Report endpoint direction, accepted endpoint types, cardinality, disconnect
+  support, and required-assignment behavior.
+- Report capabilities as supported, unsupported, or unknown.
+- Apply assigned device-local actions.
+- Keep vendor-specific and domain-specific execution inside driver packages.
+
+Core responsibilities:
+
+- Interpret relationship intent.
+- Reconcile desired state within managed scope.
+- Apply global policy and conflict detection.
+- Validate endpoint compatibility and cardinality.
+- Produce deterministic transaction plans.
+- Report structured unsupported, unknown, and non-executable outcomes.
+
+Relationship extension points and structured unsupported/unknown outcomes are
+in scope for Phase 5.
+
 ## Repository Direction
 
-The repository remains a monorepo. The expected direction is:
+The repository remains a monorepo:
 
 ```text
 packages/
@@ -111,12 +142,9 @@ scripts/
 ai/
 ```
 
-Do not create separate Git repositories during Phase 4 unless explicitly
-instructed.
+Do not create separate Git repositories unless explicitly instructed.
 
-The exact build-workspace tooling should be selected through focused evaluation
-and documented before broad restructuring. Prefer standard Python packaging and
-minimal custom tooling.
+Prefer standard Python packaging and minimal custom tooling.
 
 ## Driver Discovery Contract
 
@@ -126,8 +154,8 @@ Drivers register under:
 workspace_fabric.drivers
 ```
 
-Discovery should use `importlib.metadata.entry_points()` or the supported stable
-equivalent.
+Discovery should use `importlib.metadata.entry_points()` or the supported
+stable equivalent.
 
 The core must:
 
@@ -135,7 +163,7 @@ The core must:
 - Validate duplicate driver type identifiers
 - Validate Driver API compatibility
 - Isolate and report plugin-load failures
-- Build a catalog usable by future Phase 5 APIs and authoring tools
+- Build a catalog usable by future public APIs and authoring tools
 
 ## Development Expectations
 
@@ -148,41 +176,47 @@ Before changing code:
 5. Define acceptance criteria.
 6. State backward-compatibility implications.
 
-During Phase 4:
+During Phase 5:
 
-- Prefer extraction and adaptation over rewriting physical drivers.
-- Keep each migration step buildable and testable.
-- Preserve the working physical configuration.
-- Use mock packages for discovery and lifecycle tests first.
+- Implement mock drivers before physical drivers where practical.
+- Keep existing validated physical functionality operational at every milestone
+  boundary.
+- Preserve the working physical configuration unless a documented migration is
+  required.
 - Avoid adding new hardware capabilities.
-- Keep public configuration identifiers stable.
-- Add compatibility adapters only when they are explicit, tested, and temporary.
+- Preserve stable public configuration identifiers whenever practical.
+- Add compatibility adapters only when they are explicit, tested, and
+  temporary.
+- Do not represent a partially completed relationship migration as complete.
+
+Pre-1.0 internal and Driver API changes are allowed when required by accepted
+architecture, but every completed phase and point release must leave the
+repository coherent, integrated, and operational.
 
 ## Testing Requirements
 
-Every Phase 4 change should run the applicable formatter, linter, unit tests,
-package build tests, and integration tests.
+Every Phase 5 change should run the applicable formatter, linter, unit tests,
+package build tests, isolated wheel tests, and integration tests.
 
 Coverage must include:
 
-- Plugin discovery
-- Duplicate driver type identifiers
-- Missing driver
-- Incompatible Driver API
-- Plugin-load failure
-- Installed but unused driver
-- Driver uninstall after configuration removal
-- Driver upgrade and rollback
+- Endpoint metadata validation
+- Relationship intent validation
+- Cardinality validation
+- Disconnect support and required-assignment behavior
+- Structured supported, unsupported, and unknown outcomes
+- Existing plugin discovery
+- Existing driver lifecycle behavior
 - Existing transaction behavior
 - Existing mock behavior
-- Physical smoke-test regression at the end of the phase
+- Existing physical UHD-808 and UKM404 regression at phase completion
 
 Every coding-agent result must state the exact commands run and whether they
 succeeded.
 
-## Phase 4 Non-Goals
+## Phase 5 Non-Goals
 
-Do not implement these unless explicitly requested to satisfy a Phase 4
+Do not implement these unless explicitly requested to satisfy a Phase 5
 requirement:
 
 - REST API or production server
@@ -190,12 +224,16 @@ requirement:
 - Web, desktop, or tablet applications
 - Interactive configuration authoring
 - Windows Display Agent
-- PiKVM
-- EDID, scaler, CEC, or ARC expansion
+- PiKVM-specific implementation
+- EDID, scaling, CEC, audio DSP policy, or other domain-specific execution
 - New hardware drivers
 - Multi-user orchestration
 - Multi-fabric federation
 - Plugin marketplace
+
+REST API work is deferred to Phase 6. EDID, scaling, CEC, audio DSP policy, and
+other domain-specific execution features are future driver or domain-policy
+work built on top of the Phase 5 relationship model.
 
 ## Coding Standards
 
@@ -213,9 +251,12 @@ specified by the active package `pyproject.toml` files.
 
 ## Command Execution
 
-Coding agents are expected to execute routine development commands directly within the repository workspace, including Python, pytest, Black, Ruff, package builds, and temporary virtual-environment validation.
+Coding agents are expected to execute routine development commands directly
+within the repository workspace, including Python, pytest, Black, Ruff, package
+builds, and temporary virtual-environment validation.
 
 Use the repository virtual environment when present:
 
 ```text
 .\.venv\Scripts\python.exe
+```

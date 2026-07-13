@@ -1,4 +1,4 @@
-# Phase 5 – Core Interfaces
+# Phase 6 – Core Interfaces
 
 ## Status
 
@@ -46,7 +46,7 @@ The following principles guide every deliverable in this phase.
 
 ---
 
-# Milestone 5.1 – API Foundation
+# Milestone 6.1 – API Foundation
 
 ## Deliverables
 
@@ -67,7 +67,7 @@ The following principles guide every deliverable in this phase.
 
 ---
 
-# Milestone 5.2 – Administrative CLI
+# Milestone 6.2 – Administrative CLI
 
 ## Purpose
 
@@ -97,7 +97,7 @@ bootstrap, recovery, and diagnostics.
 
 ---
 
-# Milestone 5.3 – Authentication and Authorization
+# Milestone 6.3 – Authentication and Authorization
 
 ## Deliverables
 
@@ -118,7 +118,7 @@ bootstrap, recovery, and diagnostics.
 
 ---
 
-# Milestone 5.4 – Resource APIs
+# Milestone 6.4 – Resource APIs
 
 ## Deliverables
 
@@ -130,6 +130,7 @@ REST endpoints for:
 - Scenes
 - Patches
 - Routes
+- Relationships
 - Capabilities
 - Status
 - Health
@@ -143,7 +144,7 @@ REST endpoints for:
 
 ---
 
-# Milestone 5.5 – Transaction APIs
+# Milestone 6.5 – Transaction APIs
 
 ## Deliverables
 
@@ -163,7 +164,7 @@ REST endpoints for:
 
 ---
 
-# Milestone 5.6 – Public CLI
+# Milestone 6.6 – Public CLI
 
 ## Purpose
 
@@ -189,7 +190,7 @@ Provide a command-line client that consumes the public API.
 
 ---
 
-# Milestone 5.7 – API Documentation
+# Milestone 6.7 – API Documentation
 
 ## Deliverables
 
@@ -208,7 +209,7 @@ Provide a command-line client that consumes the public API.
 
 ---
 
-# Milestone 5.8 – Integration Validation
+# Milestone 6.8 – Integration Validation
 
 ## Deliverables
 
@@ -230,7 +231,7 @@ Validate operation through:
 
 # Phase Completion Criteria
 
-Phase 5 is complete when:
+Phase 6 is complete when:
 
 - Stable versioned public APIs are available.
 - API authentication and authorization are operational.
