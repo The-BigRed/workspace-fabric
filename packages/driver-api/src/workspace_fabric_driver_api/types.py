@@ -26,6 +26,7 @@ class DriverIssueCategory(StrEnum):
     AUTHENTICATION_FAILED = "authentication_failed"
     AUTHORIZATION_FAILED = "authorization_failed"
     MISSING_DRIVER = "missing_driver"
+    DUPLICATE_DRIVER_TYPE = "duplicate_driver_type"
     INCOMPATIBLE_DRIVER_API = "incompatible_driver_api"
     PLUGIN_LOAD_FAILED = "plugin_load_failed"
     MOCK_FAILURE = "mock_failure"

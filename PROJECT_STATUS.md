@@ -28,7 +28,7 @@ independently versioned plugin architecture.
 | 4.1 – Architecture and Audit | ✅ Complete | 2026-07-11 |
 | 4.2 – Monorepo Package Structure | ✅ Complete | 2026-07-11 |
 | 4.3 – Versioned Driver API | ✅ Complete | 2026-07-13 |
-| 4.4 – Installed-Driver Discovery | ⧗ Planned | Q3 2026 |
+| 4.4 – Installed-Driver Discovery | ✅ Complete | 2026-07-13 |
 | 4.5 – Driver Metadata and Catalog | ⧗ Planned | Q3 2026 |
 | 4.6 – Driver Migration | ⧗ Planned | Q3 2026 |
 | 4.7 – Lifecycle and Compatibility | ⧗ Planned | Q3 2026 |
@@ -38,7 +38,7 @@ Current work includes:
 - ✅ Architecture audit and packaging analysis
 - ✅ Monorepo package extraction (4.2)
 - ✅ Versioned Driver API (4.3)
-- ⧗ Plugin discovery implementation (4.4)
+- ✅ Plugin discovery implementation (4.4)
 - ⧗ Driver metadata catalog (4.5)
 
 ---

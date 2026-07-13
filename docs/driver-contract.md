@@ -321,6 +321,7 @@ partial_apply
 authentication_failed
 authorization_failed
 missing_driver
+duplicate_driver_type
 incompatible_driver_api
 plugin_load_failed
 mock_failure

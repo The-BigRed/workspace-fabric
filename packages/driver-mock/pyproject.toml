@@ -19,6 +19,10 @@ dev = [
     "pytest>=9.1.1",
 ]
 
+[project.entry-points."workspace_fabric.drivers"]
+mock_video_matrix = "workspace_fabric_driver_mock.plugin:get_mock_video_plugin_descriptor"
+mock_usb_matrix = "workspace_fabric_driver_mock.plugin:get_mock_usb_plugin_descriptor"
+
 [tool.black]
 line-length = 100
 target-version = ["py314"]

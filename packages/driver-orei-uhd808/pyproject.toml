@@ -19,6 +19,9 @@ dev = [
     "pytest>=9.1.1",
 ]
 
+[project.entry-points."workspace_fabric.drivers"]
+orei_uhd808 = "workspace_fabric_driver_orei_uhd808.plugin:get_plugin_descriptor"
+
 [tool.black]
 line-length = 100
 target-version = ["py314"]

@@ -21,6 +21,28 @@ def _factory(config):
     raise AssertionError(f"Factory should not be called for {config!r}")
 
 
+class FakeEntryPoint:
+    def __init__(
+        self,
+        name: str,
+        loaded,
+        *,
+        value: str | None = None,
+    ) -> None:
+        self.name = name
+        self.value = value or f"tests:{name}"
+        self._loaded = loaded
+
+    def load(self):
+        return self._loaded
+
+
+class FakeEntryPoints(tuple):
+    def select(self, *, group: str):
+        assert group == "workspace_fabric.drivers"
+        return self
+
+
 def test_current_factory_descriptors_are_api_compatible() -> None:
     descriptors = get_driver_descriptors()
 
@@ -65,7 +87,11 @@ def test_create_driver_rejects_incompatible_descriptor_before_factory(monkeypatc
         supported_driver_api=ApiCompatibilityVersion(2, 0),
         factory=_factory,
     )
-    monkeypatch.setitem(factory.DRIVER_DESCRIPTORS, descriptor.driver_type, descriptor)
+    monkeypatch.setattr(
+        factory.metadata,
+        "entry_points",
+        lambda: FakeEntryPoints((FakeEntryPoint("future_driver", descriptor),)),
+    )
 
     with pytest.raises(IncompatibleDriverApiError):
         create_driver(

@@ -34,6 +34,7 @@ def test_phase_3_driver_contract_defines_shared_error_categories() -> None:
         "authentication_failed",
         "authorization_failed",
         "missing_driver",
+        "duplicate_driver_type",
         "incompatible_driver_api",
         "plugin_load_failed",
         "mock_failure",

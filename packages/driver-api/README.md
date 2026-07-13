@@ -37,3 +37,28 @@ def get_plugin_descriptor() -> PluginDescriptor:
         factory=ExampleDriver.from_config,
     )
 ```
+
+## Entry-Point Registration
+
+Driver packages register one entry point per driver type under
+`workspace_fabric.drivers`:
+
+```toml
+[project.entry-points."workspace_fabric.drivers"]
+example_driver = "workspace_fabric_driver_example.plugin:get_plugin_descriptor"
+```
+
+The core discovers installed packages through `importlib.metadata.entry_points`.
+Production discovery must not scan arbitrary source folders.
+
+## Discovery Diagnostics
+
+The core discovery layer reports these structured categories:
+
+- `missing_driver`
+- `duplicate_driver_type`
+- `incompatible_driver_api`
+- `plugin_load_failed`
+
+A broken entry point is isolated and reported as `plugin_load_failed`; unrelated
+compatible driver plugins remain discoverable.

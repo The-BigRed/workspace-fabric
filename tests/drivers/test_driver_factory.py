@@ -5,9 +5,9 @@ import pytest
 from workspace_fabric.config import load_config_text
 from workspace_fabric.config.models import DriverConfig
 from workspace_fabric.drivers import create_driver, create_drivers
-from workspace_fabric.drivers.mock import MockUsbMatrixDriver, MockVideoMatrixDriver
-from workspace_fabric.drivers.usb import OreiUkm404UsbDriver
-from workspace_fabric.drivers.video import OreiUhd808VideoDriver
+from workspace_fabric_driver_mock import MockUsbMatrixDriver, MockVideoMatrixDriver
+from workspace_fabric_driver_orei_uhd808 import OreiUhd808VideoDriver
+from workspace_fabric_driver_orei_ukm404 import OreiUkm404UsbDriver
 
 
 def test_driver_factory_creates_mock_and_hardware_drivers() -> None:

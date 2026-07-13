@@ -160,6 +160,11 @@ Extract shared portable contracts into `workspace-fabric-driver-api`:
 
 ## Milestone 4.4 – Installed-Driver Discovery
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.4 Installed-Driver Discovery Report](../../ai/implementation/milestone-4.4-installed-driver-discovery.md)
+
 ### Deliverables
 
 - Define entry-point group `workspace_fabric.drivers`.
@@ -167,6 +172,17 @@ Extract shared portable contracts into `workspace-fabric-driver-api`:
 - Remove hard-coded vendor registration from core code.
 - Detect duplicate driver type identifiers.
 - Isolate and report plugin-load failures.
+
+### Completion Details
+
+- Added entry-point registrations for mock, UHD-808, and UKM404 driver
+  packages.
+- Replaced the active core factory registry with `importlib.metadata`
+  discovery.
+- Added deterministic discovery diagnostics for missing, duplicate,
+  incompatible, and broken plugin cases.
+- Preserved the public factory helpers and stable configured driver type
+  identifiers.
 
 ### Acceptance Criteria
 
