@@ -4,8 +4,8 @@ from pathlib import Path
 
 from workspace_fabric.config import load_config
 from workspace_fabric.core.graph import build_resource_graph
-from workspace_fabric.drivers import DriverAction, DriverActionStatus
-from workspace_fabric.drivers.mock import (
+from workspace_fabric_driver_api import DriverAction, DriverActionStatus
+from workspace_fabric_driver_mock import (
     MockUsbMatrixDriver,
     MockVideoMatrixDriver,
     create_mock_driver,

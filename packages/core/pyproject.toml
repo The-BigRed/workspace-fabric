@@ -27,19 +27,19 @@ line-length = 100
 target-version = ["py314"]
 
 [tool.pytest.ini_options]
-pythonpath = ["../../src"]
+pythonpath = ["src", "../driver-api/src"]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-src = ["../../src", "tests"]
+src = ["src", "tests"]
 
 [tool.setuptools]
-package-dir = {"" = "../../src"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["../../src"]
+where = ["src"]
 include = ["workspace_fabric*"]
 
 [tool.ruff.lint]

@@ -12,7 +12,7 @@ from workspace_fabric.core.transactions import (
     execute_plan,
 )
 from workspace_fabric.drivers import DriverActionStatus
-from workspace_fabric.drivers.mock import create_mock_drivers
+from workspace_fabric_driver_mock import create_mock_drivers
 
 
 def test_execute_plan_against_mock_drivers_updates_state_and_records_history() -> None:

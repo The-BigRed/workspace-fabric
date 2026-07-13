@@ -14,7 +14,7 @@ from workspace_fabric.core.capabilities import (
     validate_workspace_capabilities,
 )
 from workspace_fabric.core.graph import build_resource_graph
-from workspace_fabric.drivers.mock import (
+from workspace_fabric_driver_mock import (
     MockVideoMatrixDriver,
     create_mock_drivers,
 )

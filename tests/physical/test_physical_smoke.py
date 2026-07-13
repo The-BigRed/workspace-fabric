@@ -8,8 +8,8 @@ from workspace_fabric.core.graph import build_resource_graph
 from workspace_fabric.core.planner import plan_workspace
 from workspace_fabric.core.transactions import TransactionResultStatus, execute_plan
 from workspace_fabric.drivers import Driver
-from workspace_fabric.drivers.usb import OreiUkm404UsbDriver
-from workspace_fabric.drivers.video import OreiUhd808VideoDriver
+from workspace_fabric_driver_orei_uhd808 import OreiUhd808VideoDriver
+from workspace_fabric_driver_orei_ukm404 import OreiUkm404UsbDriver
 
 _UHD_ROUTE_PATTERN = re.compile(r"s in (\d+) av out (\d+)!")
 _UKM_ROUTE_PATTERN = re.compile(r"set device (\d+) in host (\d+)")

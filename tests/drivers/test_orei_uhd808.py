@@ -9,7 +9,7 @@ from workspace_fabric.drivers import (
     DriverIssueCategory,
     VideoMatrixDriver,
 )
-from workspace_fabric.drivers.video import (
+from workspace_fabric_driver_orei_uhd808.driver import (
     OreiUhd808ConnectionError,
     OreiUhd808TimeoutError,
     OreiUhd808VideoDriver,

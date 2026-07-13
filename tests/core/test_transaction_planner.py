@@ -6,9 +6,9 @@ from workspace_fabric.config import load_config, load_config_text
 from workspace_fabric.core.graph import build_resource_graph
 from workspace_fabric.core.planner import USB_ROUTE_ACTION, VIDEO_ROUTE_ACTION, plan_workspace
 from workspace_fabric.core.transactions import TransactionPlanStatus
-from workspace_fabric.drivers.mock import MockVideoMatrixDriver, create_mock_drivers
-from workspace_fabric.drivers.usb import OreiUkm404UsbDriver
-from workspace_fabric.drivers.video import OreiUhd808VideoDriver
+from workspace_fabric_driver_mock import MockVideoMatrixDriver, create_mock_drivers
+from workspace_fabric_driver_orei_uhd808 import OreiUhd808VideoDriver
+from workspace_fabric_driver_orei_ukm404 import OreiUkm404UsbDriver
 
 
 class PlanningOnlyTransport:

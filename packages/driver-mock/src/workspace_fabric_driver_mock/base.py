@@ -16,21 +16,6 @@ from workspace_fabric_driver_api import (
     DriverValidationResult,
 )
 
-try:
-    from workspace_fabric.config.models import DriverConfig
-except ImportError:
-    # Fallback for when running driver tests independently
-    from dataclasses import dataclass
-
-    @dataclass
-    class DriverConfig:
-        id: str
-        type: str
-        fabric: str
-        connection: dict[str, Any] | None = None
-        capabilities: dict[str, Any] | None = None
-
-
 CAPABILITY_SUPPORTED = DriverCapabilityStatus.SUPPORTED.value
 CAPABILITY_UNKNOWN = DriverCapabilityStatus.UNKNOWN.value
 CAPABILITY_UNSUPPORTED = DriverCapabilityStatus.UNSUPPORTED.value
@@ -52,8 +37,8 @@ class MockDriverBase:
         self._failed_action_types: dict[str, DriverIssue] = {}
 
     @classmethod
-    def from_config(cls, config: DriverConfig) -> MockDriverBase:
-        return cls(config.id, capabilities=config.capabilities)
+    def from_config(cls, config: Any) -> MockDriverBase:
+        return cls(config.id, capabilities=getattr(config, "capabilities", {}) or {})
 
     def connect(self) -> DriverHealth:
         self._connected = True

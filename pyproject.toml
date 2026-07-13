@@ -32,7 +32,7 @@ target-version = ["py314"]
 
 [tool.pytest.ini_options]
 pythonpath = [
-    "src",
+    "packages/core/src",
     "packages/driver-api/src",
     "packages/driver-mock/src",
     "packages/driver-orei-uhd808/src",
@@ -44,7 +44,7 @@ testpaths = ["tests"]
 line-length = 100
 target-version = "py314"
 src = [
-    "src",
+    "packages/core/src",
     "tests",
     "packages/driver-api/src",
     "packages/driver-api/tests",
@@ -56,8 +56,12 @@ src = [
     "packages/driver-orei-ukm404/tests",
 ]
 
+[tool.setuptools]
+package-dir = {"" = "packages/core/src"}
+
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["packages/core/src"]
+include = ["workspace_fabric*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

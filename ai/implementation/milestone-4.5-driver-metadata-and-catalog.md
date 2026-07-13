@@ -105,6 +105,13 @@ Fix:
   expected installed driver entry points are discovered, and verifies
   `pip show -f workspace-fabric-core` lists the packaged driver catalog files.
 
+Follow-up:
+
+- Milestone 4.6 replaced the temporary repository-relative packaging path with
+  a portable package-local source layout under `packages/core/src` after
+  sdist-to-wheel validation exposed that `../../src` does not exist when an
+  sdist is extracted in isolation.
+
 ## Verification
 
 Commands run:

@@ -20,20 +20,6 @@ from workspace_fabric_driver_api import (
     DriverValidationResult,
 )
 
-try:
-    from workspace_fabric.config.models import DriverConfig
-except ImportError:
-    from dataclasses import dataclass
-
-    @dataclass
-    class DriverConfig:
-        id: str
-        type: str
-        fabric: str
-        connection: dict[str, Any] | None = None
-        capabilities: dict[str, Any] | None = None
-
-
 UKM404_DRIVER_TYPE = "orei_ukm404"
 USB_ROUTE_ACTION = DriverActionType.USB_ROUTE.value
 USB_ROUTING_CAPABILITY = "usb_routing"
@@ -259,8 +245,8 @@ class OreiUkm404UsbDriver:
         self._last_error: str | None = None
 
     @classmethod
-    def from_config(cls, config: DriverConfig) -> OreiUkm404UsbDriver:
-        connection = config.connection
+    def from_config(cls, config: Any) -> OreiUkm404UsbDriver:
+        connection = getattr(config, "connection", {}) or {}
         transport_name = str(connection.get("transport", "telnet"))
         timeout_seconds = _optional_float(connection, "timeout_seconds", default=2.0)
         line_ending = _optional_str(connection, "line_ending", default="\r\n")
@@ -301,7 +287,11 @@ class OreiUkm404UsbDriver:
                 "expected 'tcp', 'telnet', or 'serial'"
             )
 
-        return cls(config.id, transport=transport, capabilities=config.capabilities)
+        return cls(
+            config.id,
+            transport=transport,
+            capabilities=getattr(config, "capabilities", {}) or {},
+        )
 
     def connect(self) -> DriverHealth:
         try:

@@ -15,12 +15,33 @@ Versioning**.
   packages covering configuration requirements, ports, and capabilities.
 - Isolated wheel regression coverage for the `workspace-fabric-core` driver
   catalog package contents and installed entry-point discovery.
+- Phase 4.6 driver migration regression coverage for core/package dependency
+  boundaries.
+- Portable sdist-to-wheel packaging regression coverage for
+  `workspace-fabric-core`.
+
+### Changed
+
+- Mock, UHD-808, and UKM404 tests now exercise implementation classes from the
+  independently installable driver packages.
+- Driver package factories accept configuration-like objects without importing
+  core configuration models.
+- Core source now lives under `packages/core/src` so the core package is
+  self-contained when built from its sdist.
 
 ### Fixed
 
 - `workspace-fabric-core` wheels now package the real `workspace_fabric`
   implementation, including `workspace_fabric.drivers`, instead of the stale
   Phase 4.2 scaffold-only package.
+- `workspace-fabric-core` now builds successfully through the normal
+  sdist-to-wheel PEP 517 flow without depending on repository-relative
+  `../../src` paths.
+
+### Removed
+
+- Legacy mock, UHD-808, and UKM404 implementation modules from the core
+  `workspace_fabric.drivers` package.
 
 ### Planned
 

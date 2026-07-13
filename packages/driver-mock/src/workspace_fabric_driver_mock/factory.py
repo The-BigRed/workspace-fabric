@@ -5,20 +5,6 @@ from typing import Any
 
 from workspace_fabric_driver_api import Driver
 
-try:
-    from workspace_fabric.config.models import DriverConfig
-except ImportError:
-    from dataclasses import dataclass
-
-    @dataclass
-    class DriverConfig:
-        id: str
-        type: str
-        fabric: str
-        connection: dict[str, Any] | None = None
-        capabilities: dict[str, Any] | None = None
-
-
 from workspace_fabric_driver_mock.usb_matrix import MockUsbMatrixDriver
 from workspace_fabric_driver_mock.video_matrix import MockVideoMatrixDriver
 
@@ -28,7 +14,7 @@ MOCK_DRIVER_TYPES = {
 }
 
 
-def create_mock_driver(config: DriverConfig) -> Driver:
+def create_mock_driver(config: Any) -> Driver:
     try:
         driver_class = MOCK_DRIVER_TYPES[config.type]
     except KeyError as exc:
@@ -40,5 +26,5 @@ def create_mock_driver(config: DriverConfig) -> Driver:
     return driver_class.from_config(config)
 
 
-def create_mock_drivers(configs: Iterable[DriverConfig]) -> dict[str, Driver]:
+def create_mock_drivers(configs: Iterable[Any]) -> dict[str, Driver]:
     return {config.id: create_mock_driver(config) for config in configs}

@@ -21,20 +21,6 @@ from workspace_fabric_driver_api import (
     DriverValidationResult,
 )
 
-try:
-    from workspace_fabric.config.models import DriverConfig
-except ImportError:
-    from dataclasses import dataclass
-
-    @dataclass
-    class DriverConfig:
-        id: str
-        type: str
-        fabric: str
-        connection: dict[str, Any] | None = None
-        capabilities: dict[str, Any] | None = None
-
-
 UHD808_DRIVER_TYPE = "orei_uhd808"
 VIDEO_ROUTE_ACTION = DriverActionType.VIDEO_ROUTE.value
 VIDEO_ROUTING_CAPABILITY = "video_routing"
@@ -194,8 +180,8 @@ class OreiUhd808VideoDriver:
         self._last_error: str | None = None
 
     @classmethod
-    def from_config(cls, config: DriverConfig) -> OreiUhd808VideoDriver:
-        connection = config.connection
+    def from_config(cls, config: Any) -> OreiUhd808VideoDriver:
+        connection = getattr(config, "connection", {}) or {}
         host = connection.get("host")
         if not isinstance(host, str) or not host:
             raise ValueError(
@@ -225,7 +211,7 @@ class OreiUhd808VideoDriver:
         return cls(
             config.id,
             transport=transport,
-            capabilities=config.capabilities,
+            capabilities=getattr(config, "capabilities", {}) or {},
         )
 
     def connect(self) -> DriverHealth:

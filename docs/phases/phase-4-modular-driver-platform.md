@@ -238,20 +238,47 @@ Each plugin reports:
 
 ## Milestone 4.6 – Driver Migration
 
+**Status:** ✅ **COMPLETE** (2026-07-13)
+
+**Documentation:**
+- [Phase 4.6 Driver Migration Report](../../ai/implementation/milestone-4.6-driver-migration.md)
+
 ### Deliverables
 
-- Migrate mock drivers.
-- Migrate UHD-808.
-- Migrate UKM404.
-- Preserve protocol implementations and tests.
-- Preserve configuration identifiers.
+- ✅ Migrate mock drivers.
+- ✅ Migrate UHD-808.
+- ✅ Migrate UKM404.
+- ✅ Preserve protocol implementations and tests.
+- ✅ Preserve configuration identifiers.
+
+### Completion Details
+
+- Removed the legacy mock, UHD-808, and UKM404 implementation modules from the
+  core `workspace_fabric.drivers` package.
+- Kept the real implementations in the independently installable driver
+  packages introduced earlier in Phase 4.
+- Updated core and driver tests to import implementation classes from the
+  driver packages while preserving configured driver type identifiers:
+  `mock_video_matrix`, `mock_usb_matrix`, `orei_uhd808`, and `orei_ukm404`.
+- Removed driver package runtime imports of core configuration models; driver
+  factories now accept configuration-like objects without depending on core
+  orchestration modules.
+- Added migration regression coverage for core source boundaries and driver
+  package dependency direction.
+- Extended the core isolated-wheel test to verify migrated implementation
+  modules are not packaged in `workspace-fabric-core`.
+- Moved the authoritative core source tree into `packages/core/src` so
+  `workspace-fabric-core` is a self-contained distribution that can build a
+  wheel from its generated sdist.
+- Added package-level README metadata for `workspace-fabric-core`.
 
 ### Acceptance Criteria
 
-- Core imports no OREI implementation modules.
-- Driver packages import no core orchestration modules.
-- Existing unit and mocked transport tests pass.
-- Existing physical configuration resolves the same driver types.
+- ✅ Core imports no OREI implementation modules.
+- ✅ Driver packages import no core orchestration modules.
+- ✅ Existing unit and mocked transport tests pass.
+- ✅ Existing physical configuration resolves the same driver types.
+- ✅ Core sdist builds a wheel without repository-relative source paths.
 
 ## Milestone 4.7 – Lifecycle and Compatibility
 

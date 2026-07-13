@@ -8,7 +8,7 @@ from workspace_fabric.drivers import (
     UsbMatrixDriver,
     VideoMatrixDriver,
 )
-from workspace_fabric.drivers.mock import MockUsbMatrixDriver, MockVideoMatrixDriver
+from workspace_fabric_driver_mock import MockUsbMatrixDriver, MockVideoMatrixDriver
 
 
 def test_phase_3_driver_contract_defines_capability_statuses() -> None:

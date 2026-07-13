@@ -1,4 +1,4 @@
-# Phase 4 Implementation Checklist – Milestones 4.2–4.5
+# Phase 4 Implementation Checklist – Milestones 4.2–4.6
 
 This checklist details the exact steps to execute after Milestone 4.1 audit completion.
 
@@ -243,6 +243,39 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 
 ---
 
+## Milestone 4.6 – Driver Migration
+
+### Implementation Migration
+- [x] Remove legacy mock driver implementation modules from the core package
+- [x] Remove legacy OREI UHD-808 implementation module from the core package
+- [x] Remove legacy OREI UKM404 implementation module from the core package
+- [x] Keep implementation classes in their independently installable driver packages
+- [x] Preserve stable driver type identifiers
+- [x] Preserve existing protocol behavior and mocked transport tests
+
+### Dependency Direction
+- [x] Verify core source does not import driver implementation packages
+- [x] Verify driver packages do not import core configuration or orchestration modules
+- [x] Remove driver package test `pythonpath` entries that pointed at the core package
+- [x] Keep driver packages dependent only on `workspace-fabric-driver-api` and runtime vendor dependencies
+
+### Testing
+- [x] Update root tests to import driver implementations from driver packages
+- [x] Add migration regression tests for source/package boundaries
+- [x] Extend core isolated-wheel coverage to verify migrated implementation modules are absent from `workspace-fabric-core`
+- [x] Add portable sdist-to-wheel regression coverage for `workspace-fabric-core`
+- [x] Verify a core-only install does not install implementation driver packages
+- [x] Run root unit and driver tests
+- [x] Run package tests
+
+### Documentation
+- [x] Update Phase 4 milestone status
+- [x] Add Milestone 4.6 implementation report
+- [x] Record generated build-artifact cleanup required after implementation migration
+- [x] Record core sdist packaging defect and fix
+
+---
+
 ## Physical Regression Testing
 
 ### Before Phase 4.2
@@ -319,6 +352,17 @@ This checklist details the exact steps to execute after Milestone 4.1 audit comp
 - Driver package `plugin.py` metadata descriptors
 - Driver catalog and package plugin tests
 - Phase 4 status and implementation documentation
+
+### Updated Files (4.6)
+- Moved core source to `packages/core/src/workspace_fabric/`
+- Removed legacy implementation modules under `workspace_fabric/drivers/mock/`
+- Removed legacy implementation modules under `workspace_fabric/drivers/video/`
+- Removed legacy implementation modules under `workspace_fabric/drivers/usb/`
+- Updated root tests to use driver package imports
+- Updated driver package factories to avoid runtime core model imports
+- Updated `packages/core/pyproject.toml` to use package-local `src`
+- Updated root `pyproject.toml` development paths to use `packages/core/src`
+- Added `tests/drivers/test_driver_migration.py`
 
 ---
 

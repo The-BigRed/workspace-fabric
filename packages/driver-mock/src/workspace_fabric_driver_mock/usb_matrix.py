@@ -14,20 +14,6 @@ from workspace_fabric_driver_api import (
     DriverValidationResult,
 )
 
-try:
-    from workspace_fabric.config.models import DriverConfig
-except ImportError:
-    from dataclasses import dataclass
-
-    @dataclass
-    class DriverConfig:
-        id: str
-        type: str
-        fabric: str
-        connection: dict[str, Any] | None = None
-        capabilities: dict[str, Any] | None = None
-
-
 from workspace_fabric_driver_mock.base import CAPABILITY_SUPPORTED, MockDriverBase
 
 USB_ROUTE_ACTION = DriverActionType.USB_ROUTE.value
@@ -52,8 +38,8 @@ class MockUsbMatrixDriver(MockDriverBase):
         self._routes: dict[str, str] = {}
 
     @classmethod
-    def from_config(cls, config: DriverConfig) -> MockUsbMatrixDriver:
-        return cls(config.id, capabilities=config.capabilities)
+    def from_config(cls, config: Any) -> MockUsbMatrixDriver:
+        return cls(config.id, capabilities=getattr(config, "capabilities", {}) or {})
 
     def get_state(self) -> Mapping[str, Any]:
         state = dict(super().get_state())

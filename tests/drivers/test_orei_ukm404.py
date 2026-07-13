@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any
 
 import pytest
 
-from workspace_fabric.config.models import DriverConfig
 from workspace_fabric.drivers import (
     DriverAction,
     DriverActionStatus,
     DriverIssueCategory,
     UsbMatrixDriver,
 )
-from workspace_fabric.drivers.usb import (
+from workspace_fabric_driver_orei_ukm404.driver import (
     OreiUkm404ConnectionError,
     OreiUkm404TimeoutError,
     OreiUkm404UsbDriver,
@@ -22,6 +23,15 @@ from workspace_fabric.drivers.usb import (
     response_confirms_route,
     route_command,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class DriverConfig:
+    id: str
+    type: str
+    fabric: str
+    connection: dict[str, Any]
+    capabilities: dict[str, str] | None = None
 
 
 class ScriptedTransport:
